@@ -1,0 +1,8 @@
+<div class="container py-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Doctor Dashboard</h2>
+    <button class="btn btn-outline-secondary" (click)="logout()">Logout</button>
+  </div>
+
+  <p>Welcome, <strong>{{ auth.getUserId() }}</strong>. This is a mock dashboard for doctors.</p>
+</div>

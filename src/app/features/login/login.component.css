@@ -1,0 +1,5 @@
+.login-page { min-height: calc(100vh - 140px); background: linear-gradient(180deg,#f6fbff,#ffffff); padding: 40px 15px; }
+.login-card { width: 100%; max-width: 420px; border-radius: 12px; box-shadow: 0 12px 40px rgba(2,32,64,0.08); border: 1px solid rgba(14,167,233,0.08); }
+.login-card .form-control { border-radius: 8px; }
+.login-card .btn-primary { background: var(--primary-color); border: none; }
+.login-card .btn-primary:hover { background: #0b86c9 }
