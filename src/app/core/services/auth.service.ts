@@ -15,9 +15,9 @@ export class AuthService {
 
   // Mock accounts
   private accounts: Credentials[] = [
-    { id: 'doctor01', password: 'Doc@1234', role: 'doctor' },
-    { id: 'nurse01', password: 'Nurse@1234', role: 'nurse' },
-    { id: 'admin01', password: 'Admin@1234', role: 'admin' }
+    { id: 'doctor01', password: 'Doc@1234', role: 'doctor' }, //ก้องโอม
+    { id: 'nurse01', password: 'Nurse@1234', role: 'nurse' }, 
+    { id: 'admin01', password: 'Admin@1234', role: 'admin' } //ไอซ์
   ];
 
   constructor(private router: Router) {}
