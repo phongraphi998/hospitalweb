@@ -12,6 +12,7 @@ export class AppComponent {
   constructor(private router: Router) {}
 
   isLoginPage(): boolean {
-    return this.router.url === '/login';
+    const url = this.router.url;
+    return url === '/login' || url.startsWith('/doctor') || url.startsWith('/nurse') || url.startsWith('/admin');
   }
 }
