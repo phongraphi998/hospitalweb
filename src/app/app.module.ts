@@ -13,6 +13,8 @@ import { LoginComponent } from './features/login/login.component';
 import { DoctorComponent } from './features/doctor/doctor.component';
 import { NurseComponent } from './features/nurse/nurse.component';
 import { AdminComponent } from './features/admin/admin.component';
+import { TopbarComponent } from './shared/components/topbar/topbar.component';
+import { SidebarComponent } from './shared/components/sidebar/sidebar.component';
 
 @NgModule({
   declarations: [
@@ -25,6 +27,8 @@ import { AdminComponent } from './features/admin/admin.component';
     DoctorComponent,
     NurseComponent,
     AdminComponent
+    , TopbarComponent,
+    SidebarComponent
   ],
   imports: [
     BrowserModule,

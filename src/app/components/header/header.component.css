@@ -1,5 +1,4 @@
-/* Variables and overall styles */
-:root {
+:host {
   --color-primary: #0ea7e9;
   --color-secondary: #1bb5ec;
   --color-dark: #1d2d3d;
@@ -49,25 +48,50 @@
   margin: 0;
   padding: 0;
   display: flex;
-  gap: 20px;
+  gap: 24px;
+  align-items: center;
 }
 
-.navmenu a {
+.navmenu ul li:not(.nav-cta) a {
   color: var(--color-dark);
   text-decoration: none;
   font-weight: 500;
-  transition: color 0.3s;
+  padding: 8px 0;
+  position: relative;
+  transition: color 0.3s ease;
+  display: inline-block;
 }
 
-.navmenu a:hover {
+/* underline indicator for non-CTA nav links only */
+.navmenu ul li:not(.nav-cta) a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  width: 100%;
+  background-color: var(--color-primary);
+  transform: scaleX(0);
+  transform-origin: bottom right;
+  transition: transform 0.3s ease-out;
+}
+
+.navmenu ul li:not(.nav-cta) a:hover,
+.navmenu ul li:not(.nav-cta) a.active {
   color: var(--color-primary);
+}
+
+.navmenu ul li:not(.nav-cta) a:hover::after,
+.navmenu ul li:not(.nav-cta) a.active::after {
+  transform: scaleX(1);
+  transform-origin: bottom left;
 }
 
 .cta-btn {
   background: var(--color-primary);
   color: white;
   padding: 10px 25px;
-  border-radius: 5px;
+  border-radius: 28px;
   text-decoration: none;
   transition: background 0.3s;
 }
@@ -82,11 +106,51 @@
   cursor: pointer;
 }
 
+/* tighten spacing between last nav link and CTA, and style nav-cta button */
+.navmenu ul li.nav-cta {
+  margin-left: 6px;
+}
+
+.navmenu ul li.nav-cta a.btn {
+  padding-left: 1.25rem;
+  /* px-4 */
+  padding-right: 1.25rem;
+  border-radius: 999px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
+  color: #ffffff !important;
+}
+
+.login-btn {
+  font-weight: 700;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  color: #ffffff !important;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+@media (max-width: 575.98px) {
+
+  /* keep button readable in mobile menu when nav becomes vertical */
+  .navmenu ul {
+    gap: 10px;
+  }
+
+  .navmenu ul li.nav-cta a.btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 @media (max-width: 1199px) {
   .navmenu.active {
     display: block;
   }
-  
+
   .navmenu ul {
     flex-direction: column;
     gap: 10px;

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 
@@ -7,18 +7,42 @@ import { AuthService } from '../../core/services/auth.service';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   id = '';
   password = '';
   error = '';
+  rememberMe = false;
+  showPassword = false;
 
-  constructor(private auth: AuthService, private router: Router) {}
+  private readonly REMEMBER_KEY = 'medilab_remember_id';
+
+  constructor(private auth: AuthService, private router: Router) { }
+
+  ngOnInit(): void {
+    // โหลด Staff ID ที่บันทึกไว้ (ถ้ามี)
+    const savedId = localStorage.getItem(this.REMEMBER_KEY);
+    if (savedId) {
+      this.id = savedId;
+      this.rememberMe = true;
+    }
+  }
+
+  togglePassword(): void {
+    this.showPassword = !this.showPassword;
+  }
 
   submit(): void {
     this.error = '';
+
+    // บันทึกหรือลบ Staff ID ตาม Remember Me
+    if (this.rememberMe) {
+      localStorage.setItem(this.REMEMBER_KEY, this.id.trim());
+    } else {
+      localStorage.removeItem(this.REMEMBER_KEY);
+    }
+
     const res = this.auth.login(this.id.trim(), this.password);
     if (res.ok && res.role) {
-      // route by role
       switch (res.role) {
         case 'doctor': this.router.navigate(['/doctor']); break;
         case 'nurse': this.router.navigate(['/nurse']); break;
