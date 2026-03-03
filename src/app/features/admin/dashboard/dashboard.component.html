@@ -1,0 +1,74 @@
+<div class="dashboard-wrapper">
+  <div class="dashboard-header">
+    <h2>Hospital Dashboard</h2>
+    <p>Overview of hospital system</p>
+  </div>
+  <!-- SUMMARY CARDS -->
+  <div class="summary-grid">
+    <div class="summary-card blue">
+      <i class="bi bi-people"></i>
+      <div>
+        <h3>{{ totalPatients }}</h3>
+        <p>Total Patients</p>
+      </div>
+    </div>
+    <div class="summary-card green">
+      <i class="bi bi-person-badge"></i>
+      <div>
+        <h3>{{ totalStaff }}</h3>
+        <p>Total Staff</p>
+      </div>
+    </div>
+    <div class="summary-card purple">
+      <i class="bi bi-building"></i>
+      <div>
+        <h3>{{ totalDepartments }}</h3>
+        <p>Departments</p>
+      </div>
+    </div>
+    <div class="summary-card orange">
+      <i class="bi bi-cash-stack"></i>
+      <div>
+        <h3>{{ formattedRevenue }}</h3>
+        <p>Today's Revenue</p>
+      </div>
+    </div>
+  </div>
+  <!-- TODAY APPOINTMENTS -->
+  <div class="card-table">
+    <div class="card-header">
+      <h3>Today's Appointments</h3>
+      <span class="badge">{{ todaysAppointments.length }}</span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Patient</th>
+          <th>Doctor</th>
+          <th>Time</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let a of todaysAppointments">
+          <td>{{ a.patient }}</td>
+          <td>{{ a.doctor }}</td>
+          <td>{{ a.time }}</td>
+          <td>
+            <span
+              class="status"
+              [class.scheduled]="a.status === 'Scheduled'"
+              [class.completed]="a.status === 'Completed'"
+              [class.cancelled]="a.status === 'Cancelled'"
+            >
+              {{ a.status }}
+            </span>
+          </td>
+        </tr>
+        <tr *ngIf="todaysAppointments.length === 0">
+          <td colspan="4" class="empty">No appointments today</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

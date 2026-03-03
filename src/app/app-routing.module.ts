@@ -5,15 +5,30 @@ import { LoginComponent } from './features/login/login.component';
 import { DoctorComponent } from './features/doctor/doctor.component';
 import { NurseComponent } from './features/nurse/nurse.component';
 import { AdminComponent } from './features/admin/admin.component';
-import { AuthGuard } from './core/guards/auth.guard';
-import { RoleGuard } from './core/guards/role.guard';
+import { DashboardComponent } from './features/admin/dashboard/dashboard.component';
+import { DepartmentsComponent } from './features/admin/departments/departments.component';
+import { StaffComponent } from './features/admin/staff/staff.component';
+import { PatientsComponent } from './features/admin/patients/patients.component';
+import { AppointmentsComponent } from './features/admin/appointments/appointments.component';
+import { BillingComponent } from './features/admin/billing/billing.component';
 
 const routes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'login', component: LoginComponent },
-  { path: 'doctor', component: DoctorComponent, canActivate: [AuthGuard, RoleGuard], data: { roles: ['doctor'] } },
-  { path: 'nurse', component: NurseComponent, canActivate: [AuthGuard, RoleGuard], data: { roles: ['nurse'] } },
-  { path: 'admin', component: AdminComponent, canActivate: [AuthGuard, RoleGuard], data: { roles: ['admin'] } },
+  { path: 'doctor', component: DoctorComponent },
+  { path: 'nurse', component: NurseComponent },
+  {
+    path: 'admin',
+    component: AdminComponent,
+    children: [
+      { path: '', component: DashboardComponent },
+      { path: 'departments', component: DepartmentsComponent },
+      { path: 'staff', component: StaffComponent },
+      { path: 'patients', component: PatientsComponent },
+      { path: 'appointments', component: AppointmentsComponent },
+      { path: 'billing', component: BillingComponent }
+    ]
+  },
   { path: '**', redirectTo: '' }
 ];
 
@@ -22,3 +37,4 @@ const routes: Routes = [
   exports: [RouterModule]
 })
 export class AppRoutingModule { }
+ 
