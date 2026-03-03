@@ -1,0 +1,207 @@
+<!-- ================= PAGE HEADER ================= -->
+<div class="page-header-card">
+  <div class="page-header">
+    <div>
+      <h2 class="page-title">
+        <i class="bi bi-receipt"></i>
+
+        Billing Management
+      </h2>
+      <p class="page-sub">Manage hospital receipts</p>
+    </div>
+    <div class="header-actions">
+      <div class="search-wrapper">
+        <i class="bi bi-search"></i>
+        <input
+          type="text"
+          placeholder="Search receipt..."
+          [(ngModel)]="searchTerm"
+        />
+      </div>
+      <button class="primary-btn" (click)="openCreate()">
+        <i class="bi bi-plus-lg"></i>
+
+        Add Receipt
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= TABLE ================= -->
+<div class="table-card">
+  <table class="custom-table">
+    <thead>
+      <tr>
+        <th>Receipt No</th>
+        <th>Patient</th>
+        <th>Total</th>
+        <th>Status</th>
+        <th class="text-center">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let bill of filteredBills">
+        <td>
+          <span class="code-badge">{{ bill.invoiceNo }}</span>
+        </td>
+        <td>
+          <div class="name-cell">
+            <div class="avatar">
+              {{ bill.patient?.charAt(0) }}
+            </div>
+            <span>{{ bill.patient }}</span>
+          </div>
+        </td>
+        <td>{{ bill.grandTotal | number }} ฿</td>
+        <td>
+          <span
+            class="status-badge"
+            [ngClass]="bill.status === 'Paid' ? 'active' : 'inactive'"
+          >
+            {{ bill.status }}
+          </span>
+        </td>
+        <td class="actions">
+          <button
+            class="icon-btn edit"
+            *ngIf="bill.status === 'Unpaid'"
+            (click)="markPaid(bill)"
+          >
+            <i class="bi bi-check-circle"></i>
+          </button>
+          <button class="icon-btn" (click)="openPrint(bill)">
+            <i class="bi bi-printer"></i>
+          </button>
+          <button class="icon-btn delete" (click)="deleteBill(bill.id)">
+            <i class="bi bi-trash"></i>
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ================= MODAL CREATE ================= -->
+<div class="modal-overlay" *ngIf="showForm">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-icon">
+        <i class="bi bi-receipt"></i>
+      </div>
+      <h3>Add Receipt</h3>
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Patient</label>
+        <select [(ngModel)]="newBill.patient">
+          <option value="">Select Patient</option>
+          <option *ngFor="let p of data.patientList" [value]="p.name">
+            {{ p.name }}
+          </option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Discount</label>
+        <input
+          type="number"
+          [(ngModel)]="newBill.discount"
+          (input)="calculateTotals()"
+        />
+      </div>
+    </div>
+    <hr />
+    <h4>Add Item</h4>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Description</label>
+        <input [(ngModel)]="newItem.description" />
+      </div>
+      <div class="form-group">
+        <label>Qty</label>
+        <input type="number" [(ngModel)]="newItem.qty" />
+      </div>
+      <div class="form-group">
+        <label>Price</label>
+        <input type="number" [(ngModel)]="newItem.price" />
+      </div>
+    </div>
+    <button class="primary-btn" (click)="addItem()">
+      <i class="bi bi-plus-lg"></i>
+
+      Add Item
+    </button>
+    <hr />
+    <div *ngFor="let i of newBill.items; let idx = index" class="item-row">
+      <span>{{ i.description }}</span>
+      <span>{{ i.qty }} x {{ i.price | number }}</span>
+      <span>{{ i.total | number }} ฿</span>
+      <button class="icon-btn delete" (click)="removeItem(idx)">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+    <hr />
+    <div class="totals">
+      <p>Subtotal: {{ newBill.subtotal | number }} ฿</p>
+      <h3>Total: {{ newBill.grandTotal | number }} ฿</h3>
+    </div>
+    <div class="modal-actions">
+      <button class="primary-btn" (click)="saveBill()">Save</button>
+      <button class="outline-btn" (click)="closeForm()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= PRINT RECEIPT ================= -->
+<div class="print-overlay" *ngIf="selectedBill">
+  <div class="receipt-container" id="receipt">
+    <div class="receipt-header">
+      <h2>HMS HOSPITAL</h2>
+      <p>123 Health Street, Bangkok</p>
+      <p>Tel: 02-123-4567</p>
+      <hr />
+      <h3>OFFICIAL RECEIPT</h3>
+    </div>
+    <div class="receipt-info">
+      <p><strong>Receipt No:</strong> {{ selectedBill.invoiceNo }}</p>
+      <p>
+        <strong>Date:</strong>
+        {{ selectedBill.createdAt | date: "dd/MM/yyyy HH:mm" }}
+      </p>
+      <p><strong>Patient:</strong> {{ selectedBill.patient }}</p>
+    </div>
+    <table class="receipt-table">
+      <thead>
+        <tr>
+          <th>Description</th>
+          <th>Qty</th>
+          <th>Unit Price</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of selectedBill.items">
+          <td>{{ item.description }}</td>
+          <td>{{ item.qty }}</td>
+          <td>{{ item.price | number }}</td>
+          <td>{{ item.total | number }}</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="receipt-total">
+      <p>Subtotal: {{ selectedBill.subtotal | number }} ฿</p>
+      <p>Discount: {{ selectedBill.discount | number }} ฿</p>
+      <h3>Grand Total: {{ selectedBill.grandTotal | number }} ฿</h3>
+    </div>
+    <div class="signature">
+      <br /><br />
+
+      ___________________________<br />
+
+      Authorized Signature
+    </div>
+    <div class="print-actions no-print">
+      <button class="primary-btn" (click)="printReceipt()">Print</button>
+      <button class="outline-btn" (click)="closeReceipt()">Close</button>
+    </div>
+  </div>
+</div>

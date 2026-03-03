@@ -596,3 +596,135 @@ img {
     font-size: 14px;
   }
 }
+/* ===============================
+   ADMIN PANEL UPGRADE LAYER
+   =============================== */
+
+/* Page Header */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.page-header h2 {
+  margin-bottom: 5px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+/* Search Box */
+.search-box {
+  min-width: 250px;
+  background: #f8fafc;
+}
+
+/* Admin Table Card */
+.table-container {
+  background: #ffffff;
+  padding: 25px;
+  border-radius: 14px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
+  margin-top: 15px;
+}
+
+/* Table */
+.enterprise-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.enterprise-table th {
+  text-align: left;
+  font-weight: 600;
+  color: var(--dark-color);
+  padding: 14px 10px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.enterprise-table td {
+  padding: 14px 10px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.enterprise-table tr:hover {
+  background: #f8fbff;
+  transition: 0.2s ease;
+}
+
+/* Status Badge Modern */
+.status-badge {
+  padding: 5px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status-badge.active {
+  background: #e6f9f2;
+  color: #0f9d58;
+}
+
+.status-badge.inactive {
+  background: #fde8e8;
+  color: #d93025;
+}
+
+/* Buttons refine */
+.btn {
+  border-radius: 8px;
+  padding: 8px 18px;
+  font-size: 14px;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+}
+
+.btn-outline {
+  border-width: 1.5px;
+}
+
+/* Modal Upgrade */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.modal-box {
+  background: #ffffff;
+  padding: 30px;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 550px;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.08);
+  animation: fadeInUp 0.25s ease;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Form spacing */
+.modal-box .form-control,
+.modal-box .form-select {
+  margin-bottom: 15px;
+}
