@@ -1,7 +1,7 @@
 {
-  "name": "medilab-hospital",
+  "name": "hms-hospital",
   "version": "1.0.0",
-  "description": "Medilab Hospital Website - Angular",
+  "description": "HMS Hospital Website - Angular",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",

@@ -1,6 +1,6 @@
-# Medilab Hospital - Angular Application
+# HMS Hospital - Angular Application
 
-Medilab Hospital is a comprehensive healthcare website built with Angular, featuring:
+HMS Hospital is a comprehensive healthcare website built with Angular, featuring:
 
 - **Responsive Design**: Mobile-first approach with Bootstrap 5
 - **Component-Based Architecture**: Organized into reusable Angular components
@@ -126,4 +126,4 @@ For issues and questions, please visit the hospital website or contact support.
 
 ---
 
-**Built with ❤️ by Medilab Team**
+**Built with ❤️ by HMS Hospital Team**
