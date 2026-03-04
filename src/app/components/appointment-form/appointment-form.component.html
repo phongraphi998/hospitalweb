@@ -23,9 +23,11 @@
       <div class="form-group col-md-6">
         <select [(ngModel)]="appointment.department" name="department" class="form-control" required>
           <option value="">Select Department</option>
-          <option *ngFor="let dept of departments" [value]="dept.id">
+          @for (dept of departments; track $index) {
+          <option [value]="dept.id">
             {{ dept.name }}
           </option>
+          }
         </select>
       </div>
       <div class="form-group col-md-6">
@@ -38,13 +40,18 @@
         placeholder="Message (Optional)"></textarea>
     </div>
     <button type="submit" class="btn btn-primary" [disabled]="loading || !isFormValid()">
-      <span *ngIf="!loading">Book Appointment</span>
-      <span *ngIf="loading">Processing...</span>
+      @if (!loading) {
+      <span>Book Appointment</span>
+      } @else {
+      <span>Processing...</span>
+      }
     </button>
   </form>
 
-  <div *ngIf="submitted" class="alert alert-success alert-dismissible fade show" role="alert">
+  @if (submitted) {
+  <div class="alert alert-success alert-dismissible fade show" role="alert">
     Your appointment request has been submitted successfully!
     <button type="button" class="btn-close" (click)="submitted = false"></button>
   </div>
+  }
 </div>

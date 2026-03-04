@@ -43,9 +43,10 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let s of filteredStaff">
-        <!-- NAME + AVATAR -->
-        <td>
+      @for (s of filteredStaff; track $index) {
+        <tr>
+          <!-- NAME + AVATAR -->
+          <td>
           <div class="name-cell">
             <div class="avatar blue">
               {{ s.name.charAt(0) }}
@@ -79,13 +80,15 @@
           </button>
         </td>
       </tr>
+      }
     </tbody>
   </table>
 </div>
 
 <!-- ================= MODAL ================= -->
-<div class="modal-overlay" *ngIf="showForm">
-  <div class="modal-box">
+@if (showForm) {
+  <div class="modal-overlay">
+    <div class="modal-box">
     <div class="modal-header">
       <div class="modal-icon">
         <i class="bi bi-person-badge-fill"></i>
@@ -120,9 +123,11 @@
         <label>Department</label>
         <select [(ngModel)]="newStaff.department">
           <option value="">Select Department</option>
-          <option *ngFor="let d of data.departments" [value]="d.name">
-            {{ d.name }}
-          </option>
+          @for (d of data.departments; track $index) {
+            <option [value]="d.name">
+              {{ d.name }}
+            </option>
+          }
         </select>
       </div>
       <div class="form-group">
@@ -147,3 +152,4 @@
     </div>
   </div>
 </div>
+}

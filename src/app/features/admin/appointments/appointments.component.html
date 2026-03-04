@@ -41,7 +41,8 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let a of filteredAppointments">
+      @for (a of filteredAppointments; track $index) {
+        <tr>
         <td>
           <div class="name-cell">
             <div class="avatar pink">
@@ -68,39 +69,44 @@
           </span>
         </td>
         <td class="actions">
-          <button
-            class="icon-btn confirm"
-            (click)="confirmAppointment(a)"
-            *ngIf="a.status === 'Scheduled'"
-          >
-            <i class="bi bi-check-circle"></i>
-          </button>
-          <button
-            class="icon-btn complete"
-            (click)="completeAppointment(a)"
-            *ngIf="a.status === 'Scheduled'"
-          >
-            <i class="bi bi-clipboard-check"></i>
-          </button>
-          <button
-            class="icon-btn cancel"
-            (click)="cancelAppointment(a)"
-            *ngIf="a.status !== 'Completed'"
-          >
-            <i class="bi bi-x-circle"></i>
-          </button>
+          @if (a.status === 'Scheduled') {
+            <button
+              class="icon-btn confirm"
+              (click)="confirmAppointment(a)"
+            >
+              <i class="bi bi-check-circle"></i>
+            </button>
+          }
+          @if (a.status === 'Scheduled') {
+            <button
+              class="icon-btn complete"
+              (click)="completeAppointment(a)"
+            >
+              <i class="bi bi-clipboard-check"></i>
+            </button>
+          }
+          @if (a.status !== 'Completed') {
+            <button
+              class="icon-btn cancel"
+              (click)="cancelAppointment(a)"
+            >
+              <i class="bi bi-x-circle"></i>
+            </button>
+          }
           <button class="icon-btn edit" (click)="openEdit(a)">
             <i class="bi bi-pencil"></i>
           </button>
         </td>
-      </tr>
+        </tr>
+      }
     </tbody>
   </table>
 </div>
 
 <!-- ================= MODAL ================= -->
-<div class="modal-overlay" *ngIf="showForm">
-  <div class="modal-box">
+@if (showForm) {
+  <div class="modal-overlay">
+    <div class="modal-box">
     <div class="modal-header">
       <div class="modal-icon">
         <i class="bi bi-calendar-plus-fill"></i>
@@ -112,20 +118,24 @@
         <label>Patient</label>
         <select [(ngModel)]="newAppointment.patient">
           <option value="">Select Patient</option>
-          <option *ngFor="let p of data.patientList" [value]="p.name">
-            {{ p.name }}
-          </option>
+          @for (p of data.patientList; track $index) {
+            <option [value]="p.name">
+              {{ p.name }}
+            </option>
+          }
         </select>
       </div>
       <div class="form-group">
         <label>Doctor</label>
         <select [(ngModel)]="newAppointment.doctor">
           <option value="">Select Doctor</option>
-          <ng-container *ngFor="let s of data.staffList">
-            <option *ngIf="s.role === 'doctor'" [value]="s.name">
-              {{ s.name }}
-            </option>
-          </ng-container>
+          @for (s of data.staffList; track $index) {
+            @if (s.role === 'doctor') {
+              <option [value]="s.name">
+                {{ s.name }}
+              </option>
+            }
+          }
         </select>
       </div>
       <div class="form-group">
@@ -155,3 +165,4 @@
     </div>
   </div>
 </div>
+}

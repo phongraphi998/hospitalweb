@@ -42,7 +42,8 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let dep of filteredDepartments">
+      @for (dep of filteredDepartments; track $index) {
+        <tr>
         <td>
           <span class="code-badge">{{ dep.code }}</span>
         </td>
@@ -74,13 +75,15 @@
           </button>
         </td>
       </tr>
+      }
     </tbody>
   </table>
 </div>
 
 <!-- ================= MODAL ================= -->
-<div class="modal-overlay" *ngIf="showForm">
-  <div class="modal-box">
+@if (showForm) {
+  <div class="modal-overlay">
+    <div class="modal-box">
     <div class="modal-header">
       <div class="modal-icon">
         <i class="bi bi-building"></i>
@@ -98,9 +101,11 @@
         <label>Department Name</label>
         <select [(ngModel)]="newDepartment.name" (change)="autoGenerateCode()">
           <option value="">Select Department</option>
-          <option *ngFor="let d of departmentOptions" [value]="d">
-            {{ d }}
-          </option>
+          @for (d of departmentOptions; track $index) {
+            <option [value]="d">
+              {{ d }}
+            </option>
+          }
         </select>
       </div>
       <!-- HEAD -->
@@ -133,3 +138,4 @@
     </div>
   </div>
 </div>
+}
