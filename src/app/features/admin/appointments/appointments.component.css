@@ -6,12 +6,12 @@
 }
 
 /* ===== HEADER ===== */
+
 .page-header-card {
   background: white;
   padding: 25px;
   border-radius: 18px;
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
-
   margin-bottom: 20px;
 }
 
@@ -93,25 +93,19 @@
 
 .custom-table {
   width: 100%;
-
   border-collapse: collapse;
 }
 
 .custom-table th {
   text-align: left;
-
   padding: 12px;
-
   font-size: 13px;
-
   color: #64748b;
-
   background: #f8fafc;
 }
 
 .custom-table td {
   padding: 14px 12px;
-
   border-top: 1px solid #f1f5f9;
 }
 
@@ -123,31 +117,20 @@
 
 .name-cell {
   display: flex;
-
   align-items: center;
-
   gap: 10px;
 }
 
 .avatar {
   width: 34px;
-
   height: 34px;
-
   border-radius: 50%;
-
   background: linear-gradient(135deg, #3b82f6, #2563eb);
-
   color: white;
-
   display: flex;
-
   align-items: center;
-
   justify-content: center;
-
   font-weight: 600;
-
   font-size: 14px;
 }
 
@@ -155,37 +138,27 @@
 
 .code-badge {
   background: #e0f2fe;
-
   color: #0369a1;
-
   padding: 4px 10px;
-
   border-radius: 8px;
-
   font-size: 12px;
-
   font-weight: 600;
 }
 
 .status-badge {
   padding: 5px 12px;
-
   border-radius: 20px;
-
   font-size: 12px;
-
   font-weight: 600;
 }
 
 .status-badge.active {
   background: #dcfce7;
-
   color: #15803d;
 }
 
 .status-badge.inactive {
   background: #fee2e2;
-
   color: #b91c1c;
 }
 
@@ -193,21 +166,15 @@
 
 .actions {
   display: flex;
-
   gap: 8px;
 }
 
 .icon-btn {
   border: none;
-
   width: 32px;
-
   height: 32px;
-
   border-radius: 8px;
-
   background: #f1f5f9;
-
   transition: 0.2s;
 }
 
@@ -223,117 +190,119 @@
 
 .modal-overlay {
   position: fixed;
-
   inset: 0;
-
   background: rgba(15, 23, 42, 0.45);
-
   backdrop-filter: blur(4px);
-
   display: flex;
-
   align-items: center;
-
   justify-content: center;
-
   z-index: 999;
 }
 
 .modal-box {
   background: white;
-
   width: 100%;
-
   max-width: 520px;
-
   border-radius: 18px;
-
   padding: 30px;
-
   box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15);
 }
 
 .modal-header {
   display: flex;
-
   align-items: center;
-
   gap: 12px;
-
   margin-bottom: 20px;
 }
 
 .modal-icon {
   width: 42px;
-
   height: 42px;
-
   border-radius: 12px;
-
   background: linear-gradient(135deg, #3b82f6, #2563eb);
-
   color: white;
-
   display: flex;
-
   align-items: center;
-
   justify-content: center;
 }
 
 .form-grid {
   display: grid;
-
   gap: 15px;
 }
 
 .form-group {
   display: flex;
-
   flex-direction: column;
 }
 
 .form-group label {
   font-size: 13px;
-
   font-weight: 600;
-
   margin-bottom: 6px;
-
   color: #475569;
 }
 
 .form-group input,
 .form-group select {
   padding: 10px 12px;
-
   border-radius: 10px;
-
   border: 1px solid #e2e8f0;
 }
 
 .modal-actions {
   margin-top: 25px;
-
   display: flex;
-
   justify-content: flex-end;
-
   gap: 12px;
 }
-/* ให้หัว Actions กลางจริง */
+
+/* ===== ACTION CENTER ALIGN ===== */
+
 .custom-table th.text-center {
   text-align: center;
 }
-/* ให้ cell Actions กลาง */
+
 .custom-table td.actions {
   text-align: center;
   vertical-align: middle;
 }
-/* ปุ่มอยู่กึ่งกลางจริง */
+
 .actions {
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 14px;
+}
+
+/* ===== FIX MODAL SCROLL ===== */
+
+.modal-overlay {
+  overflow-y: auto;
+  padding: 40px 20px;
+}
+
+.modal-box {
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-box::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-box::-webkit-scrollbar-thumb {
+  background: #cbd5f5;
+  border-radius: 6px;
+}
+
+.modal-box {
+  margin: auto;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
 }
