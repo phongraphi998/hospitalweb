@@ -42,7 +42,8 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let p of filteredPatients">
+      @for (p of filteredPatients; track $index) {
+        <tr>
         <!-- NAME + AVATAR -->
         <td>
           <div class="name-cell">
@@ -73,13 +74,15 @@
           </button>
         </td>
       </tr>
+      }
     </tbody>
   </table>
 </div>
 
 <!-- ================= MODAL ================= -->
-<div class="modal-overlay" *ngIf="showForm">
-  <div class="modal-box">
+@if (showForm) {
+  <div class="modal-overlay">
+    <div class="modal-box">
     <div class="modal-header">
       <div class="modal-icon">
         <i class="bi bi-person-plus-fill"></i>
@@ -143,3 +146,4 @@
     </div>
   </div>
 </div>
+}

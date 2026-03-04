@@ -40,14 +40,15 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let bill of filteredBills">
+      @for (bill of filteredBills; track $index) {
+        <tr>
         <td>
           <span class="code-badge">{{ bill.invoiceNo }}</span>
         </td>
         <td>
           <div class="name-cell">
             <div class="avatar">
-              {{ bill.patient?.charAt(0) }}
+              {{ bill.patient.charAt(0) }}
             </div>
             <span>{{ bill.patient }}</span>
           </div>
@@ -62,13 +63,14 @@
           </span>
         </td>
         <td class="actions">
-          <button
-            class="icon-btn edit"
-            *ngIf="bill.status === 'Unpaid'"
-            (click)="markPaid(bill)"
-          >
-            <i class="bi bi-check-circle"></i>
-          </button>
+          @if (bill.status === 'Unpaid') {
+            <button
+              class="icon-btn edit"
+              (click)="markPaid(bill)"
+            >
+              <i class="bi bi-check-circle"></i>
+            </button>
+          }
           <button class="icon-btn" (click)="openPrint(bill)">
             <i class="bi bi-printer"></i>
           </button>
@@ -77,13 +79,15 @@
           </button>
         </td>
       </tr>
+      }
     </tbody>
   </table>
 </div>
 
 <!-- ================= MODAL CREATE ================= -->
-<div class="modal-overlay" *ngIf="showForm">
-  <div class="modal-box">
+@if (showForm) {
+  <div class="modal-overlay">
+    <div class="modal-box">
     <div class="modal-header">
       <div class="modal-icon">
         <i class="bi bi-receipt"></i>
@@ -95,9 +99,11 @@
         <label>Patient</label>
         <select [(ngModel)]="newBill.patient">
           <option value="">Select Patient</option>
-          <option *ngFor="let p of data.patientList" [value]="p.name">
-            {{ p.name }}
-          </option>
+          @for (p of data.patientList; track $index) {
+            <option [value]="p.name">
+              {{ p.name }}
+            </option>
+          }
         </select>
       </div>
       <div class="form-group">
@@ -131,14 +137,16 @@
       Add Item
     </button>
     <hr />
-    <div *ngFor="let i of newBill.items; let idx = index" class="item-row">
-      <span>{{ i.description }}</span>
-      <span>{{ i.qty }} x {{ i.price | number }}</span>
-      <span>{{ i.total | number }} ฿</span>
-      <button class="icon-btn delete" (click)="removeItem(idx)">
-        <i class="bi bi-x-lg"></i>
-      </button>
-    </div>
+    @for (i of newBill.items; track $index) {
+      <div class="item-row">
+        <span>{{ i.description }}</span>
+        <span>{{ i.qty }} x {{ i.price | number }}</span>
+        <span>{{ i.total | number }} ฿</span>
+        <button class="icon-btn delete" (click)="removeItem($index)">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+    }
     <hr />
     <div class="totals">
       <p>Subtotal: {{ newBill.subtotal | number }} ฿</p>
@@ -150,10 +158,12 @@
     </div>
   </div>
 </div>
+}
 
 <!-- ================= PRINT RECEIPT ================= -->
-<div class="print-overlay" *ngIf="selectedBill">
-  <div class="receipt-container" id="receipt">
+@if (selectedBill) {
+  <div class="print-overlay">
+    <div class="receipt-container" id="receipt">
     <div class="receipt-header">
       <h2>HMS HOSPITAL</h2>
       <p>123 Health Street, Bangkok</p>
@@ -179,12 +189,14 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let item of selectedBill.items">
-          <td>{{ item.description }}</td>
-          <td>{{ item.qty }}</td>
-          <td>{{ item.price | number }}</td>
-          <td>{{ item.total | number }}</td>
-        </tr>
+        @for (item of selectedBill.items; track $index) {
+          <tr>
+            <td>{{ item.description }}</td>
+            <td>{{ item.qty }}</td>
+            <td>{{ item.price | number }}</td>
+            <td>{{ item.total | number }}</td>
+          </tr>
+        }
       </tbody>
     </table>
     <div class="receipt-total">
@@ -204,4 +216,5 @@
       <button class="outline-btn" (click)="closeReceipt()">Close</button>
     </div>
   </div>
-</div>
+  </div>
+}

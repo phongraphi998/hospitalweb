@@ -50,7 +50,8 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let a of todaysAppointments">
+        @for (a of todaysAppointments; track $index) {
+          <tr>
           <td>{{ a.patient }}</td>
           <td>{{ a.doctor }}</td>
           <td>{{ a.time }}</td>
@@ -65,9 +66,12 @@
             </span>
           </td>
         </tr>
-        <tr *ngIf="todaysAppointments.length === 0">
-          <td colspan="4" class="empty">No appointments today</td>
-        </tr>
+        }
+        @if (todaysAppointments.length === 0) {
+          <tr>
+            <td colspan="4" class="empty">No appointments today</td>
+          </tr>
+        }
       </tbody>
     </table>
   </div>
