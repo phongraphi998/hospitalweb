@@ -109,7 +109,8 @@
 
 <tbody>
 
-<tr *ngFor="let q of waitingQueue">
+@for (q of waitingQueue; track $index) {
+<tr>
 
 <td class="dd-patient-cell">
 <div class="dd-mini-avatar">
@@ -139,6 +140,7 @@ Check-in
 </td>
 
 </tr>
+}
 
 </tbody>
 </table>
@@ -165,7 +167,8 @@ Check-in
 
 <tbody>
 
-<tr *ngFor="let q of checkedQueue">
+@for (q of checkedQueue; track $index) {
+<tr>
 
 <td class="dd-patient-cell">
 <div class="dd-mini-avatar">
@@ -191,6 +194,7 @@ Checked-in
 </td>
 
 </tr>
+}
 
 </tbody>
 
