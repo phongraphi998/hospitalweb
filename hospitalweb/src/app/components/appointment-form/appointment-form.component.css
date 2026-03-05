@@ -1,0 +1,48 @@
+.appointment-form {
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-control {
+  border: 1px solid #e8eef5;
+  padding: 12px 15px;
+  border-radius: 5px;
+  font-family: inherit;
+  width: 100%;
+}
+
+.form-control:focus {
+  border-color: #0ea7e9;
+  box-shadow: 0 0 0 0.2rem rgba(14, 167, 233, 0.25);
+}
+
+.btn-primary {
+  background: #0ea7e9;
+  border: none;
+  padding: 12px 40px;
+  border-radius: 5px;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  width: 100%;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #1bb5ec;
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.alert {
+  margin-top: 20px;
+}

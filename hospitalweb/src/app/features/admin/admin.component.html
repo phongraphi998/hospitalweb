@@ -1,0 +1,84 @@
+<div class="dd-layout">
+  <!-- Sidebar -->
+  <aside class="dd-sidebar">
+    <!-- Brand -->
+    <div class="dd-brand">
+      <div class="dd-brand-icon">
+        <i class="bi bi-hospital"></i>
+      </div>
+      <div class="dd-brand-name">HMS</div>
+    </div>
+    <!-- Admin Card -->
+    <div class="dd-doctor-card">
+      <div class="dd-avatar">AD</div>
+      <div class="dd-doctor-info">
+        <p class="dd-doctor-name">Admin01</p>
+        <span class="dd-role-badge">Administrator</span>
+      </div>
+    </div>
+    <!-- Navigation -->
+    <nav class="dd-nav">
+      <a
+        routerLink="/admin"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+        class="dd-nav-item"
+      >
+        <i class="bi bi-speedometer2"></i>
+        <span>Dashboard</span>
+      </a>
+      <a
+        routerLink="/admin/departments"
+        routerLinkActive="active"
+        class="dd-nav-item"
+      >
+        <i class="bi bi-building"></i>
+        <span>Departments</span>
+      </a>
+      <a
+        routerLink="/admin/staff"
+        routerLinkActive="active"
+        class="dd-nav-item"
+      >
+        <i class="bi bi-people"></i>
+        <span>Staff</span>
+      </a>
+      <a
+        routerLink="/admin/patients"
+        routerLinkActive="active"
+        class="dd-nav-item"
+      >
+        <i class="bi bi-person"></i>
+        <span>Patients</span>
+      </a>
+      <a
+        routerLink="/admin/appointments"
+        routerLinkActive="active"
+        class="dd-nav-item"
+      >
+        <i class="bi bi-calendar-check"></i>
+        <span>Appointments</span>
+      </a>
+      <a
+        routerLink="/admin/billing"
+        routerLinkActive="active"
+        class="dd-nav-item"
+      >
+        <i class="bi bi-receipt"></i>
+        <span>Billing</span>
+      </a>
+    </nav>
+    <!-- Logout -->
+    <div class="dd-sidebar-bottom">
+      <button class="dd-logout-btn" (click)="logout()">
+        <i class="bi bi-box-arrow-right"></i>
+
+        Logout
+      </button>
+    </div>
+  </aside>
+  <!-- Main -->
+  <div class="dd-main">
+    <router-outlet></router-outlet>
+  </div>
+</div>

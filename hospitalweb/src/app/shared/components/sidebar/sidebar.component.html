@@ -1,0 +1,9 @@
+<nav class="sidebar bg-white p-3">
+  <ul class="nav flex-column">
+    @for (it of items; track $index) {
+      <li class="nav-item">
+        <a class="nav-link text-dark" [routerLink]="it.link">{{ it.label }}</a>
+      </li>
+    }
+  </ul>
+</nav>
