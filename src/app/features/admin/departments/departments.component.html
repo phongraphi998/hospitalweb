@@ -1,0 +1,141 @@
+<!-- ================= PAGE HEADER ================= -->
+<div class="page-header-card">
+  <div class="page-header">
+    <div>
+      <h2 class="page-title">
+        <i class="bi bi-building"></i>
+
+        Departments Management
+      </h2>
+      <p class="page-sub">Manage hospital department structure</p>
+    </div>
+    <div class="header-actions">
+      <div class="search-wrapper">
+        <i class="bi bi-search"></i>
+        <input
+          type="text"
+          placeholder="Search department..."
+          [(ngModel)]="searchTerm"
+        />
+      </div>
+      <button class="primary-btn" (click)="openAdd()">
+        <i class="bi bi-plus-lg"></i>
+
+        Add Department
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= TABLE ================= -->
+<div class="table-card">
+  <table class="custom-table">
+    <thead>
+      <tr>
+        <th>Code</th>
+        <th>Name</th>
+        <th>Head</th>
+        <th>Phone</th>
+        <th>Floor</th>
+        <th>Status</th>
+        <th class="text-center">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (dep of filteredDepartments; track $index) {
+        <tr>
+        <td>
+          <span class="code-badge">{{ dep.code }}</span>
+        </td>
+        <td>
+          <div class="name-cell">
+            <div class="avatar">
+              {{ dep.name.charAt(0) }}
+            </div>
+            <span>{{ dep.name }}</span>
+          </div>
+        </td>
+        <td>{{ dep.head }}</td>
+        <td>{{ dep.phone }}</td>
+        <td>{{ dep.floor }}</td>
+        <td>
+          <span
+            class="status-badge"
+            [ngClass]="dep.status === 'Active' ? 'active' : 'inactive'"
+          >
+            {{ dep.status }}
+          </span>
+        </td>
+        <td class="actions">
+          <button class="icon-btn edit" (click)="openEdit(dep)">
+            <i class="bi bi-pencil"></i>
+          </button>
+          <button class="icon-btn delete" (click)="deleteDepartment(dep.id)">
+            <i class="bi bi-trash"></i>
+          </button>
+        </td>
+      </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+<!-- ================= MODAL ================= -->
+@if (showForm) {
+  <div class="modal-overlay">
+    <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-icon">
+        <i class="bi bi-building"></i>
+      </div>
+      <h3>{{ editMode ? "Edit Department" : "Add Department" }}</h3>
+    </div>
+    <div class="form-grid">
+      <!-- CODE -->
+      <div class="form-group">
+        <label>Department Code</label>
+        <input [(ngModel)]="newDepartment.code" />
+      </div>
+      <!-- NAME (แก้ตรงนี้ 🔥) -->
+      <div class="form-group">
+        <label>Department Name</label>
+        <select [(ngModel)]="newDepartment.name" (change)="autoGenerateCode()">
+          <option value="">Select Department</option>
+          @for (d of departmentOptions; track $index) {
+            <option [value]="d">
+              {{ d }}
+            </option>
+          }
+        </select>
+      </div>
+      <!-- HEAD -->
+      <div class="form-group">
+        <label>Head of Department</label>
+        <input [(ngModel)]="newDepartment.head" />
+      </div>
+      <!-- PHONE -->
+      <div class="form-group">
+        <label>Phone</label>
+        <input [(ngModel)]="newDepartment.phone" />
+      </div>
+      <!-- FLOOR -->
+      <div class="form-group">
+        <label>Floor</label>
+        <input [(ngModel)]="newDepartment.floor" />
+      </div>
+      <!-- STATUS -->
+      <div class="form-group">
+        <label>Status</label>
+        <select [(ngModel)]="newDepartment.status">
+          <option value="Active">Active</option>
+          <option value="Inactive">Inactive</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="primary-btn" (click)="saveDepartment()">Save</button>
+      <button class="outline-btn" (click)="showForm = false">Cancel</button>
+    </div>
+  </div>
+</div>
+}

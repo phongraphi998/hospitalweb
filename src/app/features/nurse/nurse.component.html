@@ -1,0 +1,214 @@
+<div class="dd-layout">
+
+<!-- Sidebar -->
+<aside class="dd-sidebar">
+
+  <!-- Brand -->
+  <div class="dd-brand">
+    <div class="dd-brand-icon">
+      <i class="bi bi-hospital"></i>
+    </div>
+    <div class="dd-brand-name">HMS</div>
+  </div>
+
+  <!-- Nurse Card -->
+  <div class="dd-doctor-card">
+    <div class="dd-avatar">NU</div>
+    <div class="dd-doctor-info">
+      <p class="dd-doctor-name">nurse01</p>
+      <span class="dd-role-badge">Nurse</span>
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="dd-nav">
+
+    <button class="dd-nav-item active">
+      <i class="bi bi-calendar-check"></i>
+      <span>Department Queue</span>
+      <span class="dd-badge">{{queues.length}}</span>
+    </button>
+
+  </nav>
+
+  <!-- spacer -->
+  <div class="dd-sidebar-spacer"></div>
+
+  <!-- Logout -->
+  <div class="dd-sidebar-bottom">
+    <button class="dd-logout-btn" (click)="logout()">
+      <i class="bi bi-box-arrow-right"></i>
+      Logout
+    </button>
+  </div>
+
+</aside>
+
+
+<!-- Main -->
+<main class="dd-main">
+
+<header class="dd-header">
+  <div>
+    <h1 class="dd-page-title">Department Queue</h1>
+    <p class="dd-page-sub">
+       Date: {{today}}
+    </p>
+  </div>
+</header>
+
+
+<div class="dd-content">
+
+<!-- SUMMARY -->
+<div class="dd-summary-row">
+
+<div class="dd-summary-card">
+<div class="dd-summary-icon">👥</div>
+<div>
+<p class="dd-num">{{queues.length}}</p>
+<p class="dd-lbl">Total Patients</p>
+</div>
+</div>
+
+<div class="dd-summary-card">
+<div class="dd-summary-icon">🟡</div>
+<div>
+<p class="dd-num">{{waitingQueue.length}}</p>
+<p class="dd-lbl">Waiting</p>
+</div>
+</div>
+
+<div class="dd-summary-card">
+<div class="dd-summary-icon">🔵</div>
+<div>
+<p class="dd-num">{{checkedQueue.length}}</p>
+<p class="dd-lbl">Checked-in</p>
+</div>
+</div>
+
+</div>
+
+
+<!-- QUEUES CONTAINER -->
+<div class="dd-queues-container">
+
+<!-- WAITING QUEUE -->
+<div class="dd-table-card">
+
+<h3>🟡 Waiting Queue</h3>
+
+<table class="dd-table">
+
+<thead>
+<tr>
+<th>Patient</th>
+<th>Department</th>
+<th>Doctor</th>
+<th>Time</th>
+<th>Action</th>
+</tr>
+</thead>
+
+<tbody>
+
+@for (q of waitingQueue; track $index) {
+<tr>
+
+<td class="dd-patient-cell">
+<div class="dd-mini-avatar">
+{{q.patient.charAt(0)}}
+</div>
+{{q.patient}}
+</td>
+
+<td>
+<span class="dd-dept">
+{{q.department}}
+</span>
+</td>
+
+<td>{{q.doctor}}</td>
+
+<td>{{q.time}}</td>
+
+<td>
+
+<button
+class="dd-complete-btn"
+(click)="checkIn(q)">
+Check-in
+</button>
+
+</td>
+
+</tr>
+}
+
+</tbody>
+</table>
+
+</div>
+
+
+<!-- CHECKED IN QUEUE -->
+<div class="dd-table-card dd-checked-queue">
+
+<h3>🔵 Checked-in Queue</h3>
+
+<table class="dd-table">
+
+<thead>
+<tr>
+<th>Patient</th>
+<th>Department</th>
+<th>Doctor</th>
+<th>Time</th>
+<th>Status</th>
+</tr>
+</thead>
+
+<tbody>
+
+@for (q of checkedQueue; track $index) {
+<tr>
+
+<td class="dd-patient-cell">
+<div class="dd-mini-avatar">
+{{q.patient.charAt(0)}}
+</div>
+{{q.patient}}
+</td>
+
+<td>
+<span class="dd-dept">
+{{q.department}}
+</span>
+</td>
+
+<td>{{q.doctor}}</td>
+
+<td>{{q.time}}</td>
+
+<td>
+<span class="dd-status active">
+Checked-in
+</span>
+</td>
+
+</tr>
+}
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+</main>
+
+</div>

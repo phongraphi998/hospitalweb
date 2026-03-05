@@ -1,0 +1,158 @@
+:host {
+  --color-primary: #0ea7e9;
+  --color-secondary: #1bb5ec;
+  --color-dark: #1d2d3d;
+  --color-light: #f3f5f7;
+}
+
+.header {
+  background: white;
+  border-bottom: 1px solid #e8eef5;
+}
+
+.topbar {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+  color: white;
+  padding: 10px 0;
+  font-size: 14px;
+}
+
+.topbar .contact-info i {
+  margin-right: 10px;
+}
+
+.topbar .contact-info a {
+  color: white;
+  text-decoration: none;
+}
+
+.topbar .social-links a {
+  color: white;
+  margin: 0 8px;
+  font-size: 16px;
+}
+
+.branding {
+  padding: 15px 0;
+}
+
+.logo h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.navmenu ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 24px;
+  align-items: center;
+}
+
+.navmenu ul li:not(.nav-cta) a {
+  color: var(--color-dark);
+  text-decoration: none;
+  font-weight: 500;
+  padding: 8px 0;
+  position: relative;
+  transition: color 0.3s ease;
+  display: inline-block;
+}
+
+/* underline indicator for non-CTA nav links only */
+.navmenu ul li:not(.nav-cta) a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  width: 100%;
+  background-color: var(--color-primary);
+  transform: scaleX(0);
+  transform-origin: bottom right;
+  transition: transform 0.3s ease-out;
+}
+
+.navmenu ul li:not(.nav-cta) a:hover,
+.navmenu ul li:not(.nav-cta) a.active {
+  color: var(--color-primary);
+}
+
+.navmenu ul li:not(.nav-cta) a:hover::after,
+.navmenu ul li:not(.nav-cta) a.active::after {
+  transform: scaleX(1);
+  transform-origin: bottom left;
+}
+
+.cta-btn {
+  background: var(--color-primary);
+  color: white;
+  padding: 10px 25px;
+  border-radius: 28px;
+  text-decoration: none;
+  transition: background 0.3s;
+}
+
+.cta-btn:hover {
+  background: var(--color-secondary);
+  color: white;
+}
+
+.mobile-nav-toggle {
+  display: none;
+  cursor: pointer;
+}
+
+/* tighten spacing between last nav link and CTA, and style nav-cta button */
+.navmenu ul li.nav-cta {
+  margin-left: 6px;
+}
+
+.navmenu ul li.nav-cta a.btn {
+  padding-left: 1.25rem;
+  /* px-4 */
+  padding-right: 1.25rem;
+  border-radius: 999px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
+  color: #ffffff !important;
+}
+
+.login-btn {
+  font-weight: 700;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  color: #ffffff !important;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+@media (max-width: 575.98px) {
+
+  /* keep button readable in mobile menu when nav becomes vertical */
+  .navmenu ul {
+    gap: 10px;
+  }
+
+  .navmenu ul li.nav-cta a.btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 1199px) {
+  .navmenu.active {
+    display: block;
+  }
+
+  .navmenu ul {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
