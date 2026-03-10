@@ -1,6 +1,8 @@
 const express = require('express');
 const cors = require('cors');
+
 const authRoutes = require('./routes/auth.routes');
+const appointmentRoutes = require('./routes/appointment.routes'); //มิวเพิ่มบรรทัดนี้มาจ้า
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -10,10 +12,12 @@ app.use(cors({
   origin: 'http://localhost:4200',
   credentials: true
 }));
+
 app.use(express.json());
 
 // Routes
 app.use('/auth', authRoutes);
+app.use('/appointments', appointmentRoutes); //มิวเพิ่มบรรทัดนี้มาจ้า
 
 // Health check
 app.get('/', (req, res) => {
@@ -48,4 +52,3 @@ server.on('error', (err) => {
     console.error('Server error:', err);
   }
 });
-
