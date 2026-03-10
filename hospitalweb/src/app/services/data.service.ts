@@ -1,4 +1,6 @@
 import { Injectable } from "@angular/core";
+import { HttpClient } from "@angular/common/http";
+import { catchError, map, of } from "rxjs";
 /* =========================
   Interfaces
 ========================= */
@@ -39,7 +41,7 @@ export interface Appointment {
   doctor: string;
   date: string;
   time: string;
-  status: "Scheduled" | "Completed" | "Cancelled";
+  status: string;
   notes: string;
 }
 export interface BillItem {
@@ -73,8 +75,11 @@ export class DataService {
   patientList: Patient[] = [];
   appointmentList: Appointment[] = [];
   billList: Bill[] = [];
-  constructor() {
+  private readonly API_URL = 'http://localhost:3000';
+
+  constructor(private http: HttpClient) {
     this.loadData();
+    this.syncAppointmentsFromAPI();
   }
   /* =========================
     Local Storage
@@ -88,6 +93,44 @@ export class DataService {
     );
     this.billList = JSON.parse(localStorage.getItem("billList") || "[]");
   }
+
+  private syncAppointmentsFromAPI() {
+    this.http
+      .get<any[]>(`${this.API_URL}/appointments`)
+      .pipe(
+        catchError((err) => {
+          console.error("Cannot fetch appointments from API", err);
+          return of([]);
+        }),
+        map((data) =>
+          data.map((a) => ({
+            id: a.id,
+            patient: a.patient_name || `Patient ${a.patient_id}`,
+            doctor: a.doctor_name || `Doctor ${a.doctor_id}`,
+            date: a.start_time ? a.start_time.split("T")[0] : "",
+            time: a.start_time ? a.start_time.split("T")[1]?.substr(0, 5) : "",
+            status:
+              a.status === "completed"
+                ? "Completed"
+                : a.status === "cancelled"
+                ? "Cancelled"
+                : a.status === "checked_in"
+                ? "Scheduled"
+                : a.status === "pending"
+                ? "Scheduled"
+                : "Scheduled",
+            notes: a.reason || "",
+          })),
+        ),
+      )
+      .subscribe((appointments) => {
+        if (appointments.length) {
+          this.appointmentList = appointments;
+          this.saveData();
+        }
+      });
+  }
+
   private saveData() {
     localStorage.setItem("departments", JSON.stringify(this.departments));
     localStorage.setItem("staffList", JSON.stringify(this.staffList));
@@ -156,19 +199,61 @@ export class DataService {
     Appointment
  ========================= */
   addAppointment(a: Appointment) {
-    this.appointmentList.push(a);
-    this.saveData();
+    const payload = {
+      patient_id: 1,
+      doctor_id: 1,
+      department_id: 1,
+      start_time: `${a.date}T${a.time}:00`,
+      reason: a.notes,
+    };
+
+    this.http.post<any>(`${this.API_URL}/appointments`, payload).subscribe(
+      (created) => {
+        this.appointmentList.push({
+          ...a,
+          id: created.id,
+          patient: created.patient_name || a.patient,
+          doctor: created.doctor_name || a.doctor,
+          status:`${created.status}`,
+        });
+        this.saveData();
+      },
+      (err) => {
+        console.error("Cannot create appointment on API, fallback to local", err);
+        this.appointmentList.push(a);
+        this.saveData();
+      },
+    );
   }
+
   updateAppointment(a: Appointment) {
     const index = this.appointmentList.findIndex((x) => x.id === a.id);
     if (index !== -1) {
+      // mirror local state
       this.appointmentList[index] = a;
       this.saveData();
     }
+
+    if (a.id) {
+      const status = String(a.status).toUpperCase();
+      this.http
+        .put<any>(`${this.API_URL}/appointments/${a.id}/status`, { status })
+        .subscribe({
+          error: (err) => {
+            console.error("Failed to update appointment status on API", err);
+          },
+        });
+    }
   }
+
   deleteAppointment(id: number) {
     this.appointmentList = this.appointmentList.filter((x) => x.id !== id);
     this.saveData();
+    this.http.delete(`${this.API_URL}/appointments/${id}`).subscribe({
+      error: (err) => {
+        console.error("Failed to delete appointment from API", err);
+      },
+    });
   }
   /* =========================
     Billing

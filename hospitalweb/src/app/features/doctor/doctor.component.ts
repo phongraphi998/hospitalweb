@@ -1,5 +1,9 @@
-import { Component } from "@angular/core";
+import { Component, OnInit } from "@angular/core";
 import { AuthService } from "../../core/services/auth.service";
+import {
+  AppointmentService,
+  Appointment as ApiAppointment,
+} from "../../services/appointment.service";
 
 export interface Appointment {
   id: string;
@@ -259,6 +263,29 @@ export class DoctorComponent {
     },
   ];
 
+  ngOnInit() {
+    this.loadAppointmentsFromApi();
+  }
+
+  loadAppointmentsFromApi() {
+    this.appointmentService.getAppointments().subscribe(
+      (data) => {
+        if (data.length) {
+          this.appointments = data.map((a) => ({
+            id: String(a.id),
+            patient: a.patient,
+            time: a.time,
+            date: a.date,
+            type: a.department || 'General',
+            status: a.status as 'confirmed' | 'pending' | 'completed',
+            room: a.department || 'Room 101',
+          }));
+        }
+      },
+      (err) => console.error('Doctor appointment fetch failed', err),
+    );
+  }
+
   // ─── Getters ───────────────────────────────────────
   get todayAppointments() {
     return this.appointments.filter((a) => a.status !== "completed").length;
@@ -287,8 +314,20 @@ export class DoctorComponent {
 
   // ─── Appointments ──────────────────────────────────
   markCompleted(apt: Appointment) {
-    apt.status = "completed";
-    this.showToast(`✓ Appointment ${apt.id} marked as completed`);
+    if (!apt.id) return;
+
+    this.appointmentService
+      .updateStatus(Number(apt.id), 'completed')
+      .subscribe(
+        (updated) => {
+          apt.status = updated.status as 'confirmed' | 'pending' | 'completed';
+          this.showToast(`✓ Appointment ${apt.id} marked as completed`);
+        },
+        (err) => {
+          console.error('Failed to update appointment status', err);
+          this.showToast(`⚠️ ไม่สามารถอัปเดตสถานะได้`);
+        },
+      );
   }
 
   // ─── Medical Record Modal ──────────────────────────
@@ -373,7 +412,10 @@ export class DoctorComponent {
     this.toastTimer = setTimeout(() => (this.toastVisible = false), 3000);
   }
 
-  constructor(public auth: AuthService) {}
+  constructor(
+    public auth: AuthService,
+    private appointmentService: AppointmentService,
+  ) {}
 
   logout(): void {
     this.auth.logout();
