@@ -1,62 +1,47 @@
-import { Component } from "@angular/core";
+import { Component, OnInit } from "@angular/core";
 import { Router } from "@angular/router";
 import { AuthService } from "../../core/services/auth.service";
+import { AppointmentService } from "../../services/appointment.service";
 
 @Component({
   selector: "app-nurse",
   templateUrl: "./nurse.component.html",
   styleUrls: ["./nurse.component.css"],
 })
-export class NurseComponent {
+export class NurseComponent implements OnInit {
+  department = "OPD";
+  today = new Date().toLocaleDateString();
+  queues: Array<any> = [];
+
   constructor(
     private router: Router,
     public auth: AuthService,
+    private appointmentService: AppointmentService,
   ) {}
 
-  department = "OPD";
-  today = "4 March 2026";
+  ngOnInit() {
+    this.loadQueue();
+  }
 
-  queues = [
-    {
-      patient: "Somchai Jaidee",
-      department: "Outpatient Department (OPD)",
-      doctor: "Dr. doctor01",
-      time: "10:00",
-      status: "CHECKED_IN",
-    },
-
-    {
-      patient: "Malee Srisuk",
-      department: "Cardiology",
-      doctor: "Dr. doctor01",
-      time: "10:30",
-      status: "PENDING",
-    },
-
-    {
-      patient: "Prasert Khumma",
-      department: "Neurology",
-      doctor: "Dr. doctor01",
-      time: "11:00",
-      status: "PENDING",
-    },
-
-    {
-      patient: "Napa Taweesuk",
-      department: "Orthopedics",
-      doctor: "Dr. doctor01",
-      time: "11:30",
-      status: "PENDING",
-    },
-
-    {
-      patient: "Wichai Butr",
-      department: "Pediatrics",
-      doctor: "Dr. doctor01",
-      time: "12:00",
-      status: "PENDING",
-    },
-  ];
+  loadQueue() {
+    this.appointmentService.getAppointments().subscribe(
+      (data) => {
+        this.queues = data
+          .filter((a) => a.status === "pending" || a.status === "confirmed")
+          .map((a) => ({
+            id: a.id,
+            patient: a.patient,
+            department: a.department || "Outpatient Department (OPD)",
+            doctor: a.doctor,
+            time: a.time,
+            status: a.status.toUpperCase(),
+          }));
+      },
+      (err) => {
+        console.error("Cannot load queue", err);
+      },
+    );
+  }
 
   get waitingQueue() {
     return this.queues.filter((q) => q.status === "PENDING");
@@ -67,7 +52,16 @@ export class NurseComponent {
   }
 
   checkIn(queue: any) {
-    queue.status = "CHECKED_IN";
+    if (!queue.id) return;
+
+    this.appointmentService.updateStatus(Number(queue.id), "CHECKED_IN").subscribe(
+      () => {
+        queue.status = "CHECKED_IN";
+      },
+      (err) => {
+        console.error("Failed to check in", err);
+      },
+    );
   }
 
   logout() {

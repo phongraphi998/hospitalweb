@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { AppointmentService, Appointment } from '../../services/appointment.service';
+import { AppointmentService, AppointmentForm } from '../../services/appointment.service';
 import { DepartmentService } from '../../services/department.service';
 
 @Component({
@@ -12,7 +12,7 @@ export class AppointmentFormComponent {
   submitted = false;
   loading = false;
 
-  appointment: Appointment = {
+  appointment: AppointmentForm = {
     name: '',
     email: '',
     phone: '',
@@ -33,18 +33,20 @@ export class AppointmentFormComponent {
     }
 
     this.loading = true;
-    this.appointmentService.bookAppointment(this.appointment)
-      .then(() => {
+    this.appointmentService.bookAppointment(this.appointment).subscribe(
+      () => {
         this.submitted = true;
         this.loading = false;
         this.resetForm();
         setTimeout(() => {
           this.submitted = false;
         }, 5000);
-      })
-      .catch(() => {
+      },
+      (error) => {
+        console.error('Booking appointment failed', error);
         this.loading = false;
-      });
+      },
+    );
   }
 
   isFormValid(): boolean {
