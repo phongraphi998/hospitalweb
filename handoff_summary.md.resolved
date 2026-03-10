@@ -1,0 +1,330 @@
+# 📋 Hospital Web – Handoff Summary (สรุปงานสำหรับส่งต่อ)
+
+> อัปเดต: 6 มีนาคม 2026 | โปรเจกต์: `c:\comsci\fullstack\project`
+
+---
+
+## ✅ สิ่งที่ทำเสร็จแล้ว
+
+### 🔐 Backend (Node.js + Express + PostgreSQL)
+| Route | Method | สถานะ | รายละเอียด |
+|-------|--------|--------|------------|
+| `POST /auth/login` | POST | ✅ Done | รับ email + password, ตรวจสอบกับ DB, คืน JWT token |
+| `GET /auth/me` | GET | ✅ Done | ตรวจสอบ JWT token แล้วคืนข้อมูล user ที่ล็อกอินอยู่ |
+
+### 🌐 Frontend (Angular)
+| ไฟล์ | สถานะ | รายละเอียด |
+|------|--------|------------|
+| `auth.service.ts` | ✅ Done | เชื่อม `/auth/login` และ `/auth/me` กับ API จริงแล้ว |
+| `doctor.component.ts` | ⚠️ Mock Data | ยังใช้ข้อมูลปลอม (appointments, patients, records, prescriptions) |
+| `nurse.component.ts` | ⚠️ Mock Data | ยังใช้ข้อมูลปลอม (queues) |
+| `data.service.ts` (Admin) | ⚠️ LocalStorage | ยังใช้ localStorage (departments, staff, patients, appointments, billing) |
+
+---
+
+## 🗄️ โครงสร้างฐานข้อมูล PostgreSQL (ที่มีอยู่แล้ว)
+
+```
+users           → id, email, password_hash, role (ADMIN/DOCTOR/NURSE)
+staff           → id, user_id, first_name, last_name, department_id, specialization, phone
+departments     → id, name, description
+patients        → id, first_name, last_name, gender, birth_date, phone, address
+appointments    → id, patient_id, doctor_id, department_id, start_time, reason, status (PENDING/CHECKED_IN/COMPLETED/CANCELLED)
+medical_records → id, appointment_id, diagnosis, treatment, notes
+prescriptions   → id, appointment_id
+prescription_items → id, prescription_id, medicine_name, dosage, frequency, duration_days
+billing         → id, appointment_id, total_amount, status (UNPAID/PAID)
+```
+
+**Test Accounts:**
+| Email | Password | Role |
+|-------|----------|------|
+| `admin@hospital.com` | (ต้องใช้ password ดั้งเดิม) | ADMIN |
+| `doctor@hospital.com` | (ต้องใช้ password ดั้งเดิม) | DOCTOR |
+| `nurse@hospital.com` | (ต้องใช้ password ดั้งเดิม) | NURSE |
+
+---
+
+## 🚀 API ที่ต้องเขียนเพิ่ม (Backend)
+
+### 📁 ไฟล์ที่ต้องสร้าง
+สร้าง route + controller ใหม่ใน `API/` โดยเพิ่มใน `index.js` แบบนี้:
+```js
+app.use('/patients', patientRoutes);
+app.use('/appointments', appointmentRoutes);
+app.use('/staff', staffRoutes);
+app.use('/departments', departmentRoutes);
+app.use('/medical-records', medicalRecordRoutes);
+app.use('/prescriptions', prescriptionRoutes);
+app.use('/billing', billingRoutes);
+```
+
+---
+
+### 1️⃣ Patients API (`/patients`) ปิ่น**
+ใช้ใน: Admin → Patients, Doctor (แสดงรายชื่อผู้ป่วย)
+
+| Method | Route | รายละเอียด |
+|--------|-------|------------|
+| GET | `/patients` | ดึงรายชื่อผู้ป่วยทั้งหมด |
+| GET | `/patients/:id` | ดึงข้อมูลผู้ป่วยรายคน |
+| POST | `/patients` | เพิ่มผู้ป่วยใหม่ |
+| PUT | `/patients/:id` | แก้ไขข้อมูลผู้ป่วย |
+| DELETE | `/patients/:id` | ลบผู้ป่วย |
+
+**Query ตัวอย่าง:**
+```sql
+SELECT * FROM patients ORDER BY created_at DESC;
+```
+
+---
+
+### 2️⃣ Appointments API (`/appointments`) มิว**
+ใช้ใน: Admin, Doctor, Nurse (Queue)
+
+| Method | Route | รายละเอียด |
+|--------|-------|------------|
+| GET | `/appointments` | ดึง appointment ทั้งหมด (JOIN patient + staff) |
+| GET | `/appointments?doctor_id=X` | กรองตาม doctor |
+| GET | `/appointments?date=YYYY-MM-DD` | กรองตามวัน (TODAY สำหรับ Dashboard) |
+| POST | `/appointments` | สร้าง appointment ใหม่ |
+| PUT | `/appointments/:id/status` | เปลี่ยนสถานะ (PENDING → CHECKED_IN → COMPLETED) |
+| DELETE | `/appointments/:id` | ลบ appointment |
+
+**Query ตัวอย่าง (JOIN):**
+```sql
+SELECT a.*, 
+       p.first_name || ' ' || p.last_name AS patient_name,
+       s.first_name || ' ' || s.last_name AS doctor_name,
+       d.name AS department_name
+FROM appointments a
+JOIN patients p ON a.patient_id = p.id
+JOIN staff s ON a.doctor_id = s.id
+LEFT JOIN departments d ON a.department_id = d.id
+ORDER BY a.start_time DESC;
+```
+
+---
+
+### 3️⃣ Staff API (`/staff`) กิ๊ก
+ใช้ใน: Admin → Staff
+
+| Method | Route | รายละเอียด |
+|--------|-------|------------|
+| GET | `/staff` | ดึงรายชื่อ staff ทั้งหมด |
+| POST | `/staff` | เพิ่ม staff ใหม่ |
+| PUT | `/staff/:id` | แก้ไข staff |
+| DELETE | `/staff/:id` | ลบ staff |
+
+---
+
+### 4️⃣ Departments API (`/departments`) เปา**
+ใช้ใน: Admin → Departments
+
+| Method | Route | รายละเอียด |
+|--------|-------|------------|
+| GET | `/departments` | ดึงแผนกทั้งหมด |
+| POST | `/departments` | เพิ่มแผนก |
+| PUT | `/departments/:id` | แก้ไขแผนก |
+| DELETE | `/departments/:id` | ลบแผนก |
+
+---
+
+### 5️⃣ Medical Records API (`/medical-records`)
+ใช้ใน: Doctor → Records Tab
+
+| Method | Route | รายละเอียด |
+|--------|-------|------------|
+| GET | `/medical-records?doctor_id=X` | ดึงประวัติที่ doctor นี้บันทึก |
+| POST | `/medical-records` | บันทึก diagnosis ใหม่ |
+
+---
+
+### 6️⃣ Prescriptions API (`/prescriptions`)
+ใช้ใน: Doctor → Prescriptions Tab
+
+| Method | Route | รายละเอียด |
+|--------|-------|------------|
+| GET | `/prescriptions?doctor_id=X` | ดึงใบสั่งยาของ doctor นี้ |
+| POST | `/prescriptions` | สร้างใบสั่งยาใหม่ (พร้อม prescription_items) |
+
+---
+
+### 7️⃣ Billing API (`/billing`)
+ใช้ใน: Admin → Billing
+
+| Method | Route | รายละเอียด |
+|--------|-------|------------|
+| GET | `/billing` | ดึงรายการบิลทั้งหมด |
+| PUT | `/billing/:id/pay` | เปลี่ยนสถานะเป็น PAID |
+
+---
+
+## 🔄 Frontend: สิ่งที่ต้องแก้ไข (เปลี่ยนจาก Mock → API จริง)
+
+### `data.service.ts` (ไฟล์หลักของ Admin)
+**ปัจจุบัน:** ใช้ `localStorage` เก็บข้อมูลทุกอย่าง  
+**ต้องเปลี่ยนเป็น:** ใช้ `HttpClient` เรียก API แทน
+
+```typescript
+// แก้ constructor inject HttpClient
+constructor(private http: HttpClient) {
+  this.loadData(); // เปลี่ยนให้เรียก API แทน localStorage
+}
+
+// ตัวอย่าง: เปลี่ยน loadData()
+loadData() {
+  this.http.get<Patient[]>('http://localhost:3000/patients').subscribe(data => {
+    this.patientList = data;
+  });
+  // ... ทำเหมือนกันสำหรับ departments, staff, appointments, billing
+}
+```
+
+> ⚠️ **สำคัญ:** ทุก request ต้อง ส่ง JWT token ใน Header:  
+> `Authorization: Bearer <token>`  
+> ใช้ `HttpInterceptor` เพื่อแนบ token อัตโนมัติ (มีใน `core/interceptors/` ถ้าสร้างไว้)
+
+---
+
+### `doctor.component.ts`
+**ปัจจุบัน:** ใช้ arrays mock ตรงๆ ใน component  
+**ต้องเปลี่ยนเป็น:** inject `HttpClient` หรือสร้าง `DoctorService` แล้วเรียก API
+
+```typescript
+// ใน ngOnInit() ของ DoctorComponent
+ngOnInit() {
+  const doctorId = this.auth.getCurrentUserSync()?.id;
+  
+  this.http.get(`/appointments?doctor_id=${doctorId}`).subscribe(data => {
+    this.appointments = data as Appointment[];
+  });
+  
+  this.http.get(`/patients`).subscribe(data => {
+    this.patients = data as Patient[];
+  });
+  
+  this.http.get(`/medical-records?doctor_id=${doctorId}`).subscribe(data => {
+    this.records = data as MedicalRecord[];
+  });
+  
+  this.http.get(`/prescriptions?doctor_id=${doctorId}`).subscribe(data => {
+    this.prescriptions = data as Prescription[];
+  });
+}
+```
+
+---
+
+### `nurse.component.ts`
+**ปัจจุบัน:** ใช้ mock queues array  
+**ต้องเปลี่ยนเป็น:** เรียก `/appointments` แล้ว filter status = PENDING/CHECKED_IN
+
+```typescript
+ngOnInit() {
+  this.http.get<any[]>('/appointments').subscribe(data => {
+    this.queues = data; // แสดงเฉพาะ appointment ของวันนี้
+  });
+}
+
+checkIn(queue: any) {
+  this.http.put(`/appointments/${queue.id}/status`, { status: 'CHECKED_IN' }).subscribe(() => {
+    queue.status = 'CHECKED_IN';
+  });
+}
+```
+
+---
+
+## 🔑 การส่ง Token ใน HTTP Request
+
+**วิธีที่ดีที่สุด** คือสร้าง `HttpInterceptor` ใน `API/middleware/` ฝั่ง frontend:
+
+```typescript
+// สร้างไฟล์: src/app/core/interceptors/auth.interceptor.ts
+@Injectable()
+export class AuthInterceptor implements HttpInterceptor {
+  constructor(private authService: AuthService) {}
+  
+  intercept(req: HttpRequest<any>, next: HttpHandler) {
+    const token = this.authService.getToken();
+    if (token) {
+      req = req.clone({
+        setHeaders: { Authorization: `Bearer ${token}` }
+      });
+    }
+    return next.handle(req);
+  }
+}
+```
+
+แล้วลงทะเบียนใน `app.module.ts`:
+```typescript
+providers: [
+  { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }
+]
+```
+
+---
+
+## 📁 โครงสร้างไฟล์ที่ต้องสร้างใหม่ (Backend)
+
+```
+API/
+├── controllers/
+│   ├── auth.controller.js        ✅ มีแล้ว
+│   ├── patient.controller.js     ❌ ต้องสร้าง
+│   ├── appointment.controller.js ❌ ต้องสร้าง
+│   ├── staff.controller.js       ❌ ต้องสร้าง
+│   ├── department.controller.js  ❌ ต้องสร้าง
+│   ├── medicalRecord.controller.js ❌ ต้องสร้าง
+│   ├── prescription.controller.js ❌ ต้องสร้าง
+│   └── billing.controller.js     ❌ ต้องสร้าง
+├── routes/
+│   ├── auth.routes.js            ✅ มีแล้ว
+│   ├── patient.routes.js         ❌ ต้องสร้าง
+│   ├── appointment.routes.js     ❌ ต้องสร้าง
+│   ├── staff.routes.js           ❌ ต้องสร้าง
+│   ├── department.routes.js      ❌ ต้องสร้าง
+│   ├── medicalRecord.routes.js   ❌ ต้องสร้าง
+│   ├── prescription.routes.js    ❌ ต้องสร้าง
+│   └── billing.routes.js         ❌ ต้องสร้าง
+```
+
+---
+
+## ⚡ ลำดับการทำงาน (แนะนำ)
+
+```
+ขั้นที่ 1 (Backend): สร้าง API patients + appointments + staff + departments
+    ↓
+ขั้นที่ 2 (Frontend): สร้าง HttpInterceptor เพื่อแนบ Token อัตโนมัติ
+    ↓
+ขั้นที่ 3 (Frontend): แก้ data.service.ts ให้ใช้ HttpClient แทน localStorage
+    ↓
+ขั้นที่ 4 (Frontend): แก้ doctor.component.ts ให้เรียก API จริง
+    ↓
+ขั้นที่ 5 (Frontend): แก้ nurse.component.ts ให้เรียก API จริง
+    ↓
+ขั้นที่ 6 (Backend): สร้าง API medical-records + prescriptions + billing
+    ↓
+ขั้นที่ 7 (Frontend): เชื่อม modal save ใน doctor ให้ส่ง POST ไปยัง API จริง
+```
+
+---
+
+## 🔧 วิธีรัน Project
+
+**Backend:**
+```bash
+cd c:\comsci\fullstack\project\API
+node index.js
+# รันที่ http://localhost:3000
+```
+
+**Frontend:**
+```bash
+cd c:\comsci\fullstack\project\hospitalweb
+npm start
+# รันที่ http://localhost:4200
+```

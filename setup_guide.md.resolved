@@ -1,0 +1,219 @@
+# 🚀 คู่มือ Setup สำหรับเพื่อนที่รับงานต่อ
+
+> โปรเจกต์: Hospital Web Management System  
+> Repository: https://github.com/phongraphi998/hospitalweb
+
+---
+
+## 📦 ขั้นตอนที่ 1 — Clone โปรเจกต์
+
+```bash
+git clone https://github.com/phongraphi998/hospitalweb.git
+cd hospitalweb
+```
+
+---
+
+## 🌿 ขั้นตอนที่ 2 — ดู Branch ที่มีอยู่
+
+```bash
+git branch -a
+```
+
+| Branch | สถานะ | รายละเอียด |
+|--------|--------|------------|
+| `main` | ✅ หลัก | โค้ดล่าสุดที่รวมแล้ว |
+| `feature/add-admin` | Merged | งาน Admin features |
+| `feature/add-doctordb` | Merged | งาน Doctor + DB |
+| `feature/add-nurse` | Merged | งาน Nurse features |
+| `feature/fix-syn` | Merged | แก้ syntax |
+| `fix/add-admin01` | Merged | แก้ Admin |
+| `fix/add-nurse01` | Merged | แก้ Nurse |
+
+> ✅ **ให้ทำงานต่อบน `main`** เป็น base แล้วสร้าง branch ใหม่ตามข้อ 3
+
+---
+
+## 🌿 ขั้นตอนที่ 3 — สร้าง Branch ใหม่สำหรับงานที่จะทำ
+
+ให้ตั้งชื่อ branch ตามชิ้นงานที่ทำ เช่น:
+
+```bash
+# ดึง main ล่าสุดก่อนเสมอ
+git checkout main
+git pull origin main
+
+# สร้าง branch ใหม่
+git checkout -b feature/add-api-patients
+```
+
+**ตัวอย่างชื่อ branch แนะนำ (ตามลำดับงาน):**
+
+```
+feature/add-api-patients       → สร้าง API /patients
+feature/add-api-appointments   → สร้าง API /appointments
+feature/add-api-staff          → สร้าง API /staff + /departments
+feature/add-api-medical        → สร้าง API /medical-records + /prescriptions
+feature/add-api-billing        → สร้าง API /billing
+feature/connect-admin-ui       → แก้ data.service.ts ให้ใช้ API
+feature/connect-doctor-ui      → แก้ doctor.component.ts ให้ใช้ API
+feature/connect-nurse-ui       → แก้ nurse.component.ts ให้ใช้ API
+feature/add-interceptor        → สร้าง AuthInterceptor
+```
+
+---
+
+## 🛠️ ขั้นตอนที่ 4 — ติดตั้ง Dependencies
+
+### Frontend (Angular)
+```bash
+cd hospitalweb
+npm install
+```
+
+### Backend (Node.js)
+```bash
+cd API
+npm install
+```
+
+---
+
+## 🗄️ ขั้นตอนที่ 5 — ตั้งค่า PostgreSQL
+
+### 5.1 สร้าง Database
+เปิด pgAdmin หรือ psql แล้วสร้าง database ชื่อ `hospital`:
+```sql
+CREATE DATABASE hospital;
+```
+
+### 5.2 Import ข้อมูล
+```bash
+# ใช้ psql import จาก backup file
+psql -U postgres -d hospital -f hospital_backup.sql
+
+# หรือถ้าอยู่ใน folder project แล้ว
+cd c:\comsci\fullstack\project
+psql -U postgres -d hospital -f hospital_backup.sql
+```
+
+### 5.3 สร้างไฟล์ `.env` ใน folder `API/`
+```bash
+# สร้างไฟล์ API/.env
+```
+
+```env
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=hospital
+DB_USER=postgres
+DB_PASSWORD=YOUR_POSTGRES_PASSWORD
+
+JWT_SECRET=your-secret-key-change-this
+PORT=3000
+```
+
+> ⚠️ ไฟล์ `.env` ถูก [.gitignore](file:///c:/comsci/fullstack/project/.gitignore) ไว้แล้ว ต้องสร้างเองทุกครั้ง
+
+---
+
+## ▶️ ขั้นตอนที่ 6 — รัน Project
+
+**เปิด Terminal 2 หน้าต่าง:**
+
+**Terminal 1 — Backend:**
+```bash
+cd API
+node index.js
+# หรือถ้าติดตั้ง nodemon ไว้
+npx nodemon index.js
+```
+✅ ควรเห็น: `Server running on http://localhost:3000`
+
+**Terminal 2 — Frontend:**
+```bash
+cd hospitalweb
+npm start
+```
+✅ ควรเห็น: `Application bundle generation complete.` แล้วเปิด http://localhost:4200
+
+---
+
+## 🔑 Test Accounts (สำหรับทดสอบ Login)
+
+| Email | Password | Role |
+|-------|----------|------|
+| `admin@hospital.com` | `admin1234` | ADMIN |
+| `doctor@hospital.com` | `doctor1234` | DOCTOR |
+| `nurse@hospital.com` | `nurse1234` | NURSE |
+
+> 💡 ถ้า login ไม่ได้ ให้สร้าง user ใหม่ผ่าน API:
+> ```bash
+> curl -X POST http://localhost:3000/auth/register \
+>   -H "Content-Type: application/json" \
+>   -d '{"email":"test@hospital.com","password":"test1234","role":"ADMIN"}'
+> ```
+> (ถ้ายังไม่มี `/auth/register` ให้ insert ตรงใน DB แทน)
+
+---
+
+## 💾 ขั้นตอนที่ 7 — Commit และ Push งาน
+
+```bash
+# บันทึกงานที่ทำ
+git add .
+git commit -m "feat: add patients API with CRUD endpoints"
+
+# Push branch ขึ้น GitHub
+git push origin feature/add-api-patients
+```
+
+**จากนั้นเปิด Pull Request บน GitHub:**
+1. ไปที่ https://github.com/phongraphi998/hospitalweb
+2. คลิก "Compare & pull request"
+3. ตั้งชื่อ PR ให้ชัดเจน เช่น `[API] Add Patients CRUD`
+4. Merge เข้า `main`
+
+---
+
+## 📂 โครงสร้างโปรเจกต์ (สรุป)
+
+```
+hospitalweb/                    ← root folder
+├── API/                        ← Backend (Node.js + Express)
+│   ├── config/
+│   │   └── db.js               ← PostgreSQL connection
+│   ├── controllers/
+│   │   └── auth.controller.js  ✅ มีแล้ว
+│   ├── middleware/
+│   │   └── auth.middleware.js  ✅ JWT verify
+│   ├── routes/
+│   │   └── auth.routes.js      ✅ มีแล้ว
+│   ├── index.js                ✅ Entry point
+│   └── .env                   ❌ ต้องสร้างเอง (ดูข้อ 5.3)
+│
+├── hospitalweb/                ← Frontend (Angular)
+│   └── src/app/
+│       ├── core/services/
+│       │   └── auth.service.ts ✅ เชื่อม API แล้ว
+│       ├── features/
+│       │   ├── admin/          ⚠️ ยังใช้ localStorage
+│       │   ├── doctor/         ⚠️ ยังใช้ mock data
+│       │   └── nurse/          ⚠️ ยังใช้ mock data
+│       └── services/
+│           └── data.service.ts ⚠️ ต้องแก้ให้ใช้ HttpClient
+│
+└── hospital_backup.sql         ✅ ไฟล์ backup ฐานข้อมูล
+```
+
+---
+
+## ❓ ถ้าเจอปัญหา
+
+| ปัญหา | วิธีแก้ |
+|-------|---------|
+| `CORS error` | เช็ค [index.js](file:///c:/comsci/fullstack/project/API/index.js) ว่า `origin: 'http://localhost:4200'` ถูกต้อง |
+| `DB connection failed` | เช็ค `.env` ว่า DB_PASSWORD ถูก และ PostgreSQL รันอยู่ |
+| `JWT invalid` | เช็คว่า `JWT_SECRET` ใน `.env` ตรงกัน |
+| `npm install error` | ลอง `npm install --legacy-peer-deps` |
+| Angular compile error | รัน `npm install` ใหม่ใน folder `hospitalweb/` |

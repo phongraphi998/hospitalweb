@@ -16,6 +16,10 @@ app.use(express.json());
 app.use('/auth', authRoutes);
 
 // Health check
+app.get('/', (req, res) => {
+  res.json({ status: 'API is running', version: '1.0.0' });
+});
+
 app.get('/health', (req, res) => {
   res.json({ status: 'API is running' });
 });
@@ -32,7 +36,16 @@ app.use((req, res) => {
 });
 
 // Start server
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
+});
+
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`Error: Port ${PORT} is already in use.`);
+    console.error('Please close other terminal or stop the process running on this port.');
+  } else {
+    console.error('Server error:', err);
+  }
 });
 
