@@ -79,41 +79,50 @@ npm install
 
 ---
 
-## 🗄️ ขั้นตอนที่ 5 — ตั้งค่า PostgreSQL
+## 🐳 ขั้นตอนที่ 5 — เริ่ม Database ด้วย Docker Compose
 
-### 5.1 สร้าง Database
-เปิด pgAdmin หรือ psql แล้วสร้าง database ชื่อ `hospital`:
-```sql
-CREATE DATABASE hospital;
-```
+> **ไม่ต้องติดตั้ง PostgreSQL บนเครื่อง** — ใช้ Docker แทน
 
-### 5.2 Import ข้อมูล
+### 5.1 ติดตั้ง Docker Desktop (ถ้ายังไม่มี)
+
+ดาวน์โหลดจาก: https://www.docker.com/products/docker-desktop  
+ติดตั้งและเปิด Docker Desktop ให้รันอยู่ก่อน
+
+### 5.2 เริ่ม PostgreSQL Container
+
 ```bash
-# ใช้ psql import จาก backup file
-psql -U postgres -d hospital -f hospital_backup.sql
-
-# หรือถ้าอยู่ใน folder project แล้ว
-cd c:\comsci\fullstack\project
-psql -U postgres -d hospital -f hospital_backup.sql
+# รันจาก root folder ของโปรเจกต์ (ที่มีไฟล์ docker-compose.yml)
+docker compose up -d
 ```
 
-### 5.3 สร้างไฟล์ `.env` ใน folder `API/`
+> ✅ Docker จะดาวน์โหลด `postgres:16-alpine` และ import schema+data จาก `hospital_init.sql` อัตโนมัติ  
+> ⏳ รอสักครู่ในครั้งแรกขณะดาวน์โหลด image
+
 ```bash
-# สร้างไฟล์ API/.env
+# ตรวจสอบว่า container รันและ DB พร้อมแล้ว
+docker compose logs db
 ```
 
-```env
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=hospital
-DB_USER=postgres
-DB_PASSWORD=YOUR_POSTGRES_PASSWORD
+ควรเห็น: `database system is ready to accept connections`
 
-JWT_SECRET=your-secret-key-change-this
-PORT=3000
+### 5.3 ตรวจสอบการเชื่อมต่อ (optional)
+
+```bash
+docker exec -it hospital_db psql -U postgres -d hospital -c "\dt"
 ```
 
-> ⚠️ ไฟล์ `.env` ถูก [.gitignore](file:///c:/comsci/fullstack/project/.gitignore) ไว้แล้ว ต้องสร้างเองทุกครั้ง
+ควรเห็นตารางต่างๆ เช่น `users`, `staff`, `patients`, ฯลฯ
+
+> ✅ **ไม่ต้องสร้าง `.env`** — ระบบใช้ค่า default ที่ตรงกับ docker-compose อยู่แล้ว
+
+### 🐳 Docker Commands สำหรับจัดการ Database
+
+| คำสั่ง | ความหมาย |
+|--------|----------|
+| `docker compose up -d` | เริ่ม DB container ใน background |
+| `docker compose down` | หยุด DB container (data ยังอยู่) |
+| `docker compose logs -f db` | ดู log แบบ real-time |
+| `docker compose down -v` | หยุดและลบ data ทิ้งทั้งหมด (reset DB) |
 
 ---
 
@@ -153,7 +162,6 @@ npm start
 >   -H "Content-Type: application/json" \
 >   -d '{"email":"test@hospital.com","password":"test1234","role":"ADMIN"}'
 > ```
-> (ถ้ายังไม่มี `/auth/register` ให้ insert ตรงใน DB แทน)
 
 ---
 
@@ -181,16 +189,14 @@ git push origin feature/add-api-patients
 ```
 hospitalweb/                    ← root folder
 ├── API/                        ← Backend (Node.js + Express)
-│   ├── config/
-│   │   └── db.js               ← PostgreSQL connection
+│   ├── config/db.js            ← PostgreSQL connection (fallback ค่า built-in)
 │   ├── controllers/
 │   │   └── auth.controller.js  ✅ มีแล้ว
 │   ├── middleware/
 │   │   └── auth.middleware.js  ✅ JWT verify
 │   ├── routes/
 │   │   └── auth.routes.js      ✅ มีแล้ว
-│   ├── index.js                ✅ Entry point
-│   └── .env                   ❌ ต้องสร้างเอง (ดูข้อ 5.3)
+│   └── index.js                ✅ Entry point
 │
 ├── hospitalweb/                ← Frontend (Angular)
 │   └── src/app/
@@ -203,7 +209,8 @@ hospitalweb/                    ← root folder
 │       └── services/
 │           └── data.service.ts ⚠️ ต้องแก้ให้ใช้ HttpClient
 │
-└── hospital_backup.sql         ✅ ไฟล์ backup ฐานข้อมูล
+├── docker-compose.yml          ✅ รัน PostgreSQL ผ่าน Docker
+└── hospital_init.sql           ✅ ไฟล์ schema + seed data
 ```
 
 ---
@@ -212,8 +219,10 @@ hospitalweb/                    ← root folder
 
 | ปัญหา | วิธีแก้ |
 |-------|---------|
-| `CORS error` | เช็ค [index.js](file:///c:/comsci/fullstack/project/API/index.js) ว่า `origin: 'http://localhost:4200'` ถูกต้อง |
-| `DB connection failed` | เช็ค `.env` ว่า DB_PASSWORD ถูก และ PostgreSQL รันอยู่ |
-| `JWT invalid` | เช็คว่า `JWT_SECRET` ใน `.env` ตรงกัน |
+| `CORS error` | เช็ค `index.js` ว่า `origin: 'http://localhost:4200'` ถูกต้อง |
+| `DB connection failed` | ตรวจสอบว่า Docker Desktop รันอยู่ และ `docker compose up -d` แล้ว |
+| `database "hospital" does not exist` | รัน `docker compose down -v` แล้ว `docker compose up -d` ใหม่ |
+| `JWT invalid` | รัน `docker compose down -v` แล้วลองใหม่ |
 | `npm install error` | ลอง `npm install --legacy-peer-deps` |
 | Angular compile error | รัน `npm install` ใหม่ใน folder `hospitalweb/` |
+| Port 5432 already in use | ตรวจสอบว่า PostgreSQL บนเครื่องถูกปิดแล้ว หรือเปลี่ยน port ใน docker-compose.yml |

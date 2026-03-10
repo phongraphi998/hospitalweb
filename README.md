@@ -1,95 +1,134 @@
-# HMS Hospital - Angular Application
+# HMS Hospital - Hospital Web Management System
 
-HMS Hospital is a comprehensive healthcare website built with Angular, featuring:
+HMS Hospital is a full-stack healthcare management system built with:
 
-- **Responsive Design**: Mobile-first approach with Bootstrap 5
-- **Component-Based Architecture**: Organized into reusable Angular components
-- **Service-Driven Data**: Angular services for doctors, departments, and appointments
-- **Modern UI/UX**: Clean, professional healthcare design
-- **Performance Optimized**: Lazy loading and code optimization ready
+- **Frontend**: Angular 17 + Bootstrap 5
+- **Backend**: Node.js + Express
+- **Database**: PostgreSQL 16 (via Docker Compose — ไม่ต้องติดตั้งบนเครื่อง)
 
 ## Project Structure
 
 ```
-src/
-├── app/
-│   ├── components/          # Shared components
-│   │   ├── header/
-│   │   ├── footer/
-│   │   └── appointment-form/
-│   ├── pages/               # Page components
-│   │   └── home/
-│   ├── services/            # Angular services
-│   │   ├── appointment.service.ts
-│   │   ├── doctor.service.ts
-│   │   └── department.service.ts
-│   ├── app.component.*      # Root component
-│   ├── app.module.ts        # App module
-│   └── app-routing.module.ts # Routing configuration
-├── assets/                  # Static assets (images, fonts, etc.)
-├── styles.css              # Global styles
-├── index.html              # HTML template
-└── main.ts                 # Application entry point
+hospitalweb/                    ← root folder
+├── API/                        ← Backend (Node.js + Express)
+│   ├── config/db.js            ← PostgreSQL connection (reads from .env)
+│   ├── controllers/
+│   ├── middleware/
+│   ├── routes/
+│   ├── index.js                ← Entry point
+│   ├── .env.example            ← Template สำหรับสร้าง .env
+│   └── .env                   ← ต้องสร้างเอง (copy จาก .env.example)
+│
+├── hospitalweb/                ← Frontend (Angular)
+│   └── src/app/
+│
+├── docker-compose.yml          ← PostgreSQL ผ่าน Docker
+└── hospital_init.sql           ← SQL schema + seed data (auto-imported)
 ```
 
 ## Getting Started
 
 ### Prerequisites
-- Node.js (v18 or higher)
-- npm (v9 or higher)
 
-### Installation
+| Tool           | Version |
+| -------------- | ------- |
+| Node.js        | v18+    |
+| npm            | v9+     |
+| Docker Desktop | latest  |
 
-1. Navigate to the project directory:
+---
+
+### Step 1 — Clone & Install Dependencies
+
 ```bash
+git clone https://github.com/phongraphi998/hospitalweb.git
 cd hospitalweb
 ```
 
-2. Install dependencies:
 ```bash
+# Backend
+cd API
 npm install
+cd ..
+
+# Frontend
+cd hospitalweb
+npm install
+cd ..
 ```
 
-3. Start the development server:
+---
+
+### Step 2 — เริ่ม Database ด้วย Docker Compose
+
 ```bash
+# รันจาก root folder (ที่มีไฟล์ docker-compose.yml)
+docker compose up -d
+```
+
+> ✅ Docker จะดาวน์โหลด `postgres:16-alpine` และ import schema+data จาก `hospital_init.sql` อัตโนมัติ
+
+```bash
+# ตรวจสอบว่า DB พร้อมแล้ว
+docker compose logs db
+```
+
+---
+
+### Step 3 — รัน Backend + Frontend
+
+**Terminal 1 — Backend:**
+
+```bash
+cd API
+node index.js
+```
+
+✅ ควรเห็น: `Server running on http://localhost:3000`
+
+**Terminal 2 — Frontend:**
+
+```bash
+cd hospitalweb
 npm start
 ```
 
-4. Open your browser and navigate to `http://localhost:4200`
+✅ เปิด http://localhost:4200
 
-## Features
+---
 
-### Components
+## 🗄️ Docker Commands
 
-- **Header**: Navigation bar with contact information and social links
-- **Footer**: Footer with links and contact information
-- **Home Page**: Landing page with hero section, about, services, appointments, departments, doctors, FAQ, and contact
-- **Appointment Form**: Booking system with patient information and appointment scheduling
+| คำสั่ง                      | ความหมาย                              |
+| --------------------------- | ------------------------------------- |
+| `docker compose up -d`      | เริ่ม DB container ใน background      |
+| `docker compose down`       | หยุด DB container                     |
+| `docker compose logs -f db` | ดู log แบบ real-time                  |
+| `docker compose down -v`    | หยุดและลบ data ทิ้งทั้งหมด (reset DB) |
 
-### Services
+---
 
-- **AppointmentService**: Manages appointment bookings and storage
-- **DoctorService**: Manages doctor information
-- **DepartmentService**: Manages department information
+## 🔑 Test Accounts
 
-## Development
+| Email                 | Password    | Role   |
+| --------------------- | ----------- | ------ |
+| `admin@hospital.com`  | `admin123`  | ADMIN  |
+| `doctor@hospital.com` | `doctor123` | DOCTOR |
+| `nurse@hospital.com`  | `nurse123`  | NURSE  |
 
-### Build for Production
-```bash
-npm run build
-```
+---
 
-The build artifacts will be stored in the `dist/` directory.
+## ❓ ถ้าเจอปัญหา
 
-### Running Tests
-```bash
-npm test
-```
+| ปัญหา                  | วิธีแก้                                                        |
+| ---------------------- | -------------------------------------------------------------- |
+| `CORS error`           | เช็ค `index.js` ว่า `origin: 'http://localhost:4200'` ถูกต้อง  |
+| `DB connection failed` | เช็คว่า Docker Desktop รันอยู่ และ `docker compose up -d` แล้ว |
+| `JWT invalid`          | เช็คว่า `JWT_SECRET` ใน `.env` ตรงกัน                          |
+| `npm install error`    | ลอง `npm install --legacy-peer-deps`                           |
+| Angular compile error  | รัน `npm install` ใหม่ใน folder `hospitalweb/`                 |
 
-### Linting
-```bash
-npm run lint
-```
+---
 
 ## Technologies Used
 
@@ -97,21 +136,8 @@ npm run lint
 - **Bootstrap**: v5.3.3
 - **TypeScript**: v5.2.2
 - **RxJS**: v7.8.0
-
-## Browser Support
-
-- Chrome (latest)
-- Firefox (latest)
-- Safari (latest)
-- Edge (latest)
-
-## License
-
-MIT License - feel free to use this template for your projects.
-
-## Support
-
-For issues and questions, please visit the hospital website or contact support.
+- **PostgreSQL**: v16 (Docker)
+- **Node.js / Express**: Backend API
 
 ## Future Enhancements
 
