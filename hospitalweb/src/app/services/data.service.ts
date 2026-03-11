@@ -135,16 +135,14 @@ export class DataService {
             doctor: a.doctor_name || `Doctor ${a.doctor_id}`,
             date: a.start_time ? a.start_time.split("T")[0] : "",
             time: a.start_time ? a.start_time.split("T")[1]?.substr(0, 5) : "",
-            status:
-              a.status === "completed"
-                ? "Completed"
-                : a.status === "cancelled"
-                ? "Cancelled"
-                : a.status === "checked_in"
-                ? "Scheduled"
-                : a.status === "pending"
-                ? "Scheduled"
-                : "Scheduled",
+            status: (() => {
+              const s = (a.status || '').toLowerCase();
+              if (s === "completed") return "Completed";
+              if (s === "cancelled") return "Cancelled";
+              if (s === "checked_in") return "Scheduled";
+              if (s === "pending") return "Scheduled";
+              return "Scheduled";
+            })(),
             notes: a.reason || "",
           })),
         ),

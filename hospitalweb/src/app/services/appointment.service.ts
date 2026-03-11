@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { BehaviorSubject, Observable, catchError, map, of } from 'rxjs';
+import { BehaviorSubject, Observable, catchError, map, of, throwError } from 'rxjs';
 
 export interface ApiAppointment {
   id: number;
@@ -108,14 +108,9 @@ export class AppointmentService {
       .pipe(
         catchError((err) => {
           console.error('Failed to update status', err);
-          return of(null as unknown as ApiAppointment);
+          return throwError(() => err);
         }),
-        map((data) => {
-          if (!data) {
-            throw new Error('Failed to update status');
-          }
-          return this.mapApiToUI(data);
-        }),
+        map((data) => this.mapApiToUI(data)),
       );
   }
 

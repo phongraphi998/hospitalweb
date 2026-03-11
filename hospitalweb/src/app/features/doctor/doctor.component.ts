@@ -5,6 +5,7 @@ import {
   Appointment as ApiAppointment,
 } from "../../services/appointment.service";
 import { PatientService } from "../../services/patient.service";
+import { PrescriptionService } from "../../services/prescription.service";
 
 export interface Appointment {
   id: string;
@@ -14,6 +15,7 @@ export interface Appointment {
   type: string;
   status: "confirmed" | "pending" | "completed";
   room: string;
+  notes?: string;
 }
 
 export interface Patient {
@@ -65,6 +67,7 @@ export class DoctorComponent {
 
   // ── Prescription form ──
   newRx: Partial<Prescription> = {};
+  selectedAppointmentId: string = "";
 
   // ── Toast ──
   toastMsg = "";
@@ -165,6 +168,7 @@ export class DoctorComponent {
   ngOnInit() {
     this.loadAppointmentsFromApi();
     this.loadPatientsFromApi();
+    this.loadPrescriptionsFromApi();
   }
 
   loadAppointmentsFromApi() {
@@ -179,7 +183,16 @@ export class DoctorComponent {
             type: a.department || 'General',
             status: a.status as 'confirmed' | 'pending' | 'completed',
             room: a.department || 'Room 101',
+            notes: a.notes,
           }));
+          
+          // Update patient conditions if patients are already loaded
+          if (this.patients.length > 0) {
+             this.patients = this.patients.map(p => {
+               const apt = this.appointments.find(a => a.patient === p.name && a.notes);
+               return { ...p, condition: apt?.notes || p.condition || '—' };
+             });
+          }
         }
       },
       (err) => console.error('Doctor appointment fetch failed', err),
@@ -201,6 +214,9 @@ export class DoctorComponent {
           const avatar = parts.length >= 2
             ? parts[0][0] + parts[1][0]
             : parts[0]?.substring(0, 2) ?? 'PT';
+          const apt = this.appointments.find(a => a.patient === p.name && a.notes);
+          const condition = apt?.notes || p.condition || '—';
+
           return {
             id: String(p.id),
             name: p.name,
@@ -208,7 +224,7 @@ export class DoctorComponent {
             gender: p.gender || '—',
             blood: p.bloodGroup || '—',
             phone: p.phone || '—',
-            condition: p.condition || '—',
+            condition: condition,
             lastVisit: p.lastVisit || '—',
             avatar: avatar.toUpperCase(),
           };
@@ -216,6 +232,41 @@ export class DoctorComponent {
       }
     });
     this.patientService.loadPatients();
+  }
+
+  loadPrescriptionsFromApi() {
+    const doctorId = this.auth.getUserId();
+    if (doctorId) {
+      this.prescriptionService.getPrescriptionsByDoctor(parseInt(doctorId)).subscribe(
+        (response) => {
+          if (response.success && response.data && response.data.length > 0) {
+            // Fetch prescriptions from API
+            const apiPrescriptions = response.data.map((p: any) => ({
+              id: `RX-${p.prescription_id}`,
+              patient: p.patient_name,
+              date: new Date(p.prescription_date).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+              }),
+              medication: p.prescription_items.map((item: any) => item.medicine_name).join(', '),
+              dosage: p.prescription_items.map((item: any) => item.dosage).join('; '),
+              duration: p.prescription_items.map((item: any) => `${item.duration_days} days`).join('; '),
+              status: "active" as const,
+            }));
+            
+            // Replace mock data with API data if available
+            if (apiPrescriptions.length > 0) {
+              this.prescriptions = [...apiPrescriptions, ...this.prescriptions];
+            }
+          }
+        },
+        (error) => {
+          console.error('Error loading prescriptions from API:', error);
+          // Keep mock data if API fails
+        }
+      );
+    }
   }
 
   // ─── Getters ───────────────────────────────────────
@@ -249,7 +300,7 @@ export class DoctorComponent {
     if (!apt.id) return;
 
     this.appointmentService
-      .updateStatus(Number(apt.id), 'completed')
+      .updateStatus(Number(apt.id), 'COMPLETED')
       .subscribe(
         (updated) => {
           apt.status = updated.status as 'confirmed' | 'pending' | 'completed';
@@ -301,11 +352,20 @@ export class DoctorComponent {
   // ─── Prescription Modal ────────────────────────────
   openRxModal() {
     this.newRx = { patient: "", medication: "", dosage: "", duration: "" };
+    this.selectedAppointmentId = "";
     this.showRxModal = true;
   }
 
   closeRxModal() {
     this.showRxModal = false;
+    this.selectedAppointmentId = "";
+  }
+
+  // Get appointments for selected patient (exclude those with prescriptions)
+  getAvailableAppointmentsForPatient(patientName: string): Appointment[] {
+    return this.appointments.filter(apt => 
+      apt.patient === patientName && apt.status !== "completed"
+    );
   }
 
   submitRx() {
@@ -313,27 +373,67 @@ export class DoctorComponent {
       !this.newRx.patient ||
       !this.newRx.medication ||
       !this.newRx.dosage ||
-      !this.newRx.duration
+      !this.newRx.duration ||
+      !this.selectedAppointmentId
     )
       return;
-    const today = new Date();
-    const dateStr = today.toLocaleDateString("en-GB", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    });
-    const id = `RX-${String(this.prescriptions.length + 1).padStart(3, "0")}`;
-    this.prescriptions.unshift({
-      id,
-      patient: this.newRx.patient!,
-      date: dateStr,
-      medication: this.newRx.medication!,
-      dosage: this.newRx.dosage!,
-      duration: this.newRx.duration!,
-      status: "active",
-    });
-    this.closeRxModal();
-    this.showToast(`✓ Prescription ${id} issued successfully`);
+
+    // Get appointment details
+    const selectedAppointment = this.appointments.find(a => a.id === this.selectedAppointmentId);
+    if (!selectedAppointment) {
+      this.showToast(`⚠️ Please select a valid appointment`);
+      return;
+    }
+
+    // Call API to create prescription
+    const prescription_items = [
+      {
+        medicine_name: this.newRx.medication!.split(' ')[0], // Extract medicine name
+        dosage: this.newRx.medication!.includes(' ') ? this.newRx.medication!.split(' ')[1] : this.newRx.dosage!,
+        frequency: this.newRx.dosage!,
+        duration_days: parseInt(this.newRx.duration!) || 30
+      }
+    ];
+
+    this.prescriptionService.createPrescription(
+      Number(selectedAppointment.id),
+      prescription_items
+    ).subscribe(
+      (response) => {
+        if (response.success) {
+          const today = new Date();
+          const dateStr = today.toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          });
+          const id = `RX-${String(this.prescriptions.length + 1).padStart(3, "0")}`;
+          
+          this.prescriptions.unshift({
+            id,
+            patient: this.newRx.patient!,
+            date: dateStr,
+            medication: this.newRx.medication!,
+            dosage: this.newRx.dosage!,
+            duration: this.newRx.duration!,
+            status: "active",
+          });
+          
+          this.closeRxModal();
+          this.showToast(`✓ Prescription ${id} issued for ${selectedAppointment.patient}`);
+        }
+      },
+      (error) => {
+        console.error('Error creating prescription:', error);
+        
+        // Handle specific error: duplicate prescription for appointment
+        if (error.error?.error === 'Prescription already exists for this appointment') {
+          this.showToast(`⚠️ A prescription already exists for this appointment. Please select a different appointment.`);
+        } else {
+          this.showToast(`✗ Failed to create prescription: ${error.error?.error || error.message}`);
+        }
+      }
+    );
   }
 
   // ─── Toast ─────────────────────────────────────────
@@ -348,6 +448,7 @@ export class DoctorComponent {
     public auth: AuthService,
     private appointmentService: AppointmentService,
     private patientService: PatientService,
+    private prescriptionService: PrescriptionService,
   ) {}
 
   logout(): void {

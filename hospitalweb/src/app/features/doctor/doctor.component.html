@@ -579,6 +579,26 @@
             }
           </select>
         </div>
+
+        <!-- Appointment selection (only show if patient selected) -->
+        @if (newRx.patient) {
+          <div class="dd-form-group">
+            <label>Appointment *</label>
+            @if (getAvailableAppointmentsForPatient(newRx.patient).length > 0) {
+              <select [(ngModel)]="selectedAppointmentId" name="rxAppointment">
+                <option value="">— Select appointment —</option>
+                @for (apt of getAvailableAppointmentsForPatient(newRx.patient); track apt.id) {
+                  <option [value]="apt.id">{{ apt.time }} - {{ apt.type }} (Room {{ apt.room }})</option>
+                }
+              </select>
+            } @else {
+              <div style="color: #f56565; font-size: 0.875rem; margin-top: 0.5rem;">
+                ⚠️ No available appointments for this patient
+              </div>
+            }
+          </div>
+        }
+
         <div class="dd-form-group">
           <label>Medication *</label>
           <input
@@ -619,7 +639,8 @@
             !newRx.patient ||
             !newRx.medication ||
             !newRx.dosage ||
-            !newRx.duration
+            !newRx.duration ||
+            !selectedAppointmentId
           "
         >
           <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
