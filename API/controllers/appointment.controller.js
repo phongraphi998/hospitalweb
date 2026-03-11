@@ -62,7 +62,8 @@ exports.updateStatus = async (req, res) => {
 
   try {
 
-    const result = await pool.query(
+    // First update the status
+    const updateResult = await pool.query(
       `UPDATE appointments
        SET status = $1
        WHERE id = $2
@@ -70,9 +71,23 @@ exports.updateStatus = async (req, res) => {
       [status, id]
     );
 
-    if (result.rows.length === 0) {
+    if (updateResult.rows.length === 0) {
       return res.status(404).json({ error: "Appointment not found" });
     }
+
+    // Then fetch with JOIN to get full details
+    const result = await pool.query(
+      `SELECT a.*, 
+              p.first_name || ' ' || p.last_name AS patient_name,
+              s.first_name || ' ' || s.last_name AS doctor_name,
+              d.name AS department_name
+       FROM appointments a
+       JOIN patients p ON a.patient_id = p.id
+       JOIN staff s ON a.doctor_id = s.id
+       LEFT JOIN departments d ON a.department_id = d.id
+       WHERE a.id = $1`,
+      [id]
+    );
 
     res.json(result.rows[0]);
 
