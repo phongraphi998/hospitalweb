@@ -54,6 +54,40 @@ exports.getAppointments = async (req, res) => {
 
 
 
+// PUT /appointments/:id
+exports.updateAppointment = async (req, res) => {
+
+  const id = req.params.id;
+  const { status, reason, start_time } = req.body;
+
+  try {
+
+    const result = await pool.query(
+      `UPDATE appointments
+       SET status = COALESCE($1, status),
+           reason = COALESCE($2, reason),
+           start_time = COALESCE($3, start_time)
+       WHERE id = $4
+       RETURNING *`,
+      [status || null, reason !== undefined ? reason : null, start_time || null, id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Appointment not found" });
+    }
+
+    res.json(result.rows[0]);
+
+  } catch (error) {
+
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
+
+  }
+
+};
+
+
 // PUT /appointments/:id/status
 exports.updateStatus = async (req, res) => {
 

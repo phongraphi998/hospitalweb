@@ -312,11 +312,18 @@ export class DataService {
 
     if (a.id) {
       const status = String(a.status).toUpperCase();
+      const start_time = a.date && a.time
+        ? `${a.date}T${a.time.length === 5 ? a.time + ':00' : a.time}`
+        : undefined;
       this.http
-        .put<any>(`${this.API_URL}/appointments/${a.id}/status`, { status })
+        .put<any>(`${this.API_URL}/appointments/${a.id}`, {
+          status,
+          reason: a.notes,
+          start_time,
+        })
         .subscribe({
           error: (err) => {
-            console.error("Failed to update appointment status on API", err);
+            console.error("Failed to update appointment on API", err);
           },
         });
     }
