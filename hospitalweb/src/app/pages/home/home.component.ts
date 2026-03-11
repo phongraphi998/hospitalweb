@@ -17,7 +17,12 @@ export class HomeComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.doctors = this.doctorService.getDoctors();
+    this.doctorService.getDoctors().subscribe({
+      next: (data) => {
+        this.doctors = data;
+      },
+      error: (err) => console.error(err)
+    });
     this.departments = this.departmentService.getDepartments();
   }
 
