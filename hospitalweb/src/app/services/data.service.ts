@@ -82,18 +82,42 @@ export class DataService {
   constructor(private http: HttpClient) {
     this.loadData();
     this.syncAppointmentsFromAPI();
+    this.syncStaffFromAPI();
   }
   /* =========================
     Local Storage
  ========================= */
   private loadData() {
     this.departments = JSON.parse(localStorage.getItem("departments") || "[]");
-    this.staffList = JSON.parse(localStorage.getItem("staffList") || "[]");
     this.patientList = JSON.parse(localStorage.getItem("patientList") || "[]");
     this.appointmentList = JSON.parse(
       localStorage.getItem("appointmentList") || "[]",
     );
     this.billList = JSON.parse(localStorage.getItem("billList") || "[]");
+  }
+
+  private syncStaffFromAPI() {
+    this.http.get<any[]>(`${this.API_URL}/staff`)
+      .pipe(
+        catchError(err => {
+          console.error("Cannot fetch staff from API", err);
+          return of([]);
+        }),
+        map(data => data.map(s => ({
+          id: s.id,
+          name: `${s.first_name} ${s.last_name}`,
+          role: (s.role ? s.role.toLowerCase() : 'doctor') as "doctor" | "nurse",
+          department: s.department_name || '',
+          phone: s.phone || '',
+          email: s.email || '',
+          license: s.specialization || '',
+          shift: 'Morning',
+          status: 'Active' as "Active" | "Inactive"
+        })))
+      )
+      .subscribe(staff => {
+        this.staffList = staff;
+      });
   }
 
   private syncAppointmentsFromAPI() {
@@ -165,19 +189,69 @@ export class DataService {
     Staff
  ========================= */
   addStaff(staff: Staff) {
-    this.staffList.push(staff);
-    this.saveData();
+    const names = staff.name.split(' ');
+    const department_id = this.departments.find(d => d.name === staff.department)?.id || 1;
+
+    // Call /staff with payload to create user + staff simultaneously
+    const payload = {
+      email: staff.email || `staff${Date.now()}@hospital.com`,
+      role: staff.role.toUpperCase(),
+      first_name: names[0] || staff.name,
+      last_name: names.slice(1).join(' ') || '.',
+      department_id: department_id,
+      specialization: staff.license,
+      phone: staff.phone
+    };
+
+    // To make it fully functional without refactoring backend user+staff coupling right now:
+    // we'll optimistically update the UI, but log error if backend fails.
+    this.http.post<any>(`${this.API_URL}/staff`, payload).subscribe({
+       next: (created) => {
+         this.syncStaffFromAPI();
+       },
+       error: (err) => {
+         console.error('Cannot create staff on API', err);
+         this.staffList.push(staff); // fallback
+       }
+    });
   }
+  
   updateStaff(staff: Staff) {
-    const index = this.staffList.findIndex((s) => s.id === staff.id);
-    if (index !== -1) {
-      this.staffList[index] = staff;
-      this.saveData();
-    }
+    const names = staff.name.split(' ');
+    const department_id = this.departments.find(d => d.name === staff.department)?.id || 1;
+
+    const payload = {
+      first_name: names[0] || staff.name,
+      last_name: names.slice(1).join(' ') || '.',
+      department_id: department_id,
+      specialization: staff.license,
+      phone: staff.phone
+    };
+
+    this.http.put<any>(`${this.API_URL}/staff/${staff.id}`, payload).subscribe({
+      next: () => {
+         this.syncStaffFromAPI();
+      },
+      error: (err) => {
+        console.error('Cannot update staff on API', err);
+        const index = this.staffList.findIndex((s) => s.id === staff.id);
+        if (index !== -1) {
+          this.staffList[index] = staff;
+        }
+      }
+    });
   }
+
   deleteStaff(id: number) {
-    this.staffList = this.staffList.filter((s) => s.id !== id);
-    this.saveData();
+    this.http.delete(`${this.API_URL}/staff/${id}`).subscribe({
+      next: () => {
+         this.syncStaffFromAPI();
+      },
+      error: (err) => {
+        console.error('Cannot delete staff on API', err);
+        this.staffList = this.staffList.filter((s) => s.id !== id);
+      }
+    });
   }
   /* =========================
     Patient

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, BehaviorSubject, catchError, of, tap, map } from 'rxjs';
+import { Observable, BehaviorSubject, catchError, of, tap, map, throwError } from 'rxjs';
 
 /* =====================
    API Model (matches DB)
@@ -118,7 +118,7 @@ export class PatientService {
       .pipe(
         catchError((err) => {
           console.error('Cannot create patient', err);
-          return of(null as any);
+          return throwError(() => err);
         }),
         tap(() => this.loadPatients())
       ) as any;
@@ -134,7 +134,7 @@ export class PatientService {
       .pipe(
         catchError((err) => {
           console.error('Cannot update patient', err);
-          return of(null as any);
+          return throwError(() => err);
         }),
         tap(() => this.loadPatients())
       ) as any;
@@ -149,7 +149,7 @@ export class PatientService {
       .pipe(
         catchError((err) => {
           console.error('Cannot delete patient', err);
-          return of({ message: 'delete failed' });
+          return throwError(() => err);
         }),
         tap(() => this.loadPatients())
       );
