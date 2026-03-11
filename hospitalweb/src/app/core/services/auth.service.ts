@@ -2,7 +2,7 @@ import { Injectable } from "@angular/core";
 import { HttpClient, HttpErrorResponse } from "@angular/common/http";
 import { Router } from "@angular/router";
 import { BehaviorSubject, Observable, throwError } from "rxjs";
-import { tap, catchError } from "rxjs/operators";
+import { tap, catchError, map } from "rxjs/operators";
 import {
   User,
   LoginRequest,
@@ -62,7 +62,8 @@ export class AuthService {
    * Calls GET /auth/me to validate token and get user data
    */
   getCurrentUser(): Observable<User> {
-    return this.http.get<User>(`${this.API_URL}/me`).pipe(
+    return this.http.get<{user: User}>(`${this.API_URL}/me`).pipe(
+      map(response => response.user),
       tap((user) => {
         localStorage.setItem(this.USER_KEY, JSON.stringify(user));
         this.currentUserSubject.next(user);
@@ -106,7 +107,7 @@ export class AuthService {
    */
   getUserId(): string | null {
     const user = this.currentUserSubject.value;
-    return user ? user.email.split("@")[0] : null;
+    return user && user.email ? user.email.split("@")[0] : null;
   }
 
   /**
