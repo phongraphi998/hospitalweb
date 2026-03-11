@@ -4,6 +4,7 @@ import {
   AppointmentService,
   Appointment as ApiAppointment,
 } from "../../services/appointment.service";
+import { PatientService } from "../../services/patient.service";
 
 export interface Appointment {
   id: string;
@@ -70,111 +71,9 @@ export class DoctorComponent {
   toastVisible = false;
   private toastTimer: any;
 
-  appointments: Appointment[] = [
-    {
-      id: "APT-001",
-      patient: "Somchai Jaidee",
-      time: "09:00 AM",
-      date: "26 Feb 2026",
-      type: "General Check-up",
-      status: "confirmed",
-      room: "Room 101",
-    },
-    {
-      id: "APT-002",
-      patient: "Malee Srisuk",
-      time: "10:30 AM",
-      date: "26 Feb 2026",
-      type: "Cardiology",
-      status: "pending",
-      room: "Room 103",
-    },
-    {
-      id: "APT-003",
-      patient: "Prasert Khumma",
-      time: "01:00 PM",
-      date: "26 Feb 2026",
-      type: "Follow-up",
-      status: "completed",
-      room: "Room 101",
-    },
-    {
-      id: "APT-004",
-      patient: "Napa Taweesuk",
-      time: "02:30 PM",
-      date: "26 Feb 2026",
-      type: "Consultation",
-      status: "confirmed",
-      room: "Room 102",
-    },
-    {
-      id: "APT-005",
-      patient: "Wichai Butr",
-      time: "04:00 PM",
-      date: "26 Feb 2026",
-      type: "Neurology",
-      status: "pending",
-      room: "Room 104",
-    },
-  ];
+  appointments: Appointment[] = [];
 
-  patients: Patient[] = [
-    {
-      id: "PT-001",
-      name: "Somchai Jaidee",
-      age: 45,
-      gender: "Male",
-      blood: "A+",
-      phone: "081-234-5678",
-      condition: "Hypertension",
-      lastVisit: "26 Feb 2026",
-      avatar: "SJ",
-    },
-    {
-      id: "PT-002",
-      name: "Malee Srisuk",
-      age: 32,
-      gender: "Female",
-      blood: "O+",
-      phone: "089-345-6789",
-      condition: "Arrhythmia",
-      lastVisit: "20 Feb 2026",
-      avatar: "MS",
-    },
-    {
-      id: "PT-003",
-      name: "Prasert Khumma",
-      age: 58,
-      gender: "Male",
-      blood: "B-",
-      phone: "062-456-7890",
-      condition: "Diabetes Type 2",
-      lastVisit: "18 Feb 2026",
-      avatar: "PK",
-    },
-    {
-      id: "PT-004",
-      name: "Napa Taweesuk",
-      age: 27,
-      gender: "Female",
-      blood: "AB+",
-      phone: "083-567-8901",
-      condition: "Migraine",
-      lastVisit: "15 Feb 2026",
-      avatar: "NT",
-    },
-    {
-      id: "PT-005",
-      name: "Wichai Butr",
-      age: 51,
-      gender: "Male",
-      blood: "B+",
-      phone: "076-678-9012",
-      condition: "Neuralgia",
-      lastVisit: "10 Feb 2026",
-      avatar: "WB",
-    },
-  ];
+  patients: Patient[] = [];
 
   records: MedicalRecord[] = [
     {
@@ -265,6 +164,7 @@ export class DoctorComponent {
 
   ngOnInit() {
     this.loadAppointmentsFromApi();
+    this.loadPatientsFromApi();
   }
 
   loadAppointmentsFromApi() {
@@ -284,6 +184,38 @@ export class DoctorComponent {
       },
       (err) => console.error('Doctor appointment fetch failed', err),
     );
+  }
+
+  loadPatientsFromApi() {
+    this.patientService.patients$.subscribe((data) => {
+      if (data.length > 0) {
+        this.patients = data.map((p) => {
+          // Calculate age from dob
+          let age = 0;
+          if (p.dob) {
+            const birthYear = new Date(p.dob).getFullYear();
+            age = new Date().getFullYear() - birthYear;
+          }
+          // Avatar: first letters of first + last name
+          const parts = p.name.split(' ');
+          const avatar = parts.length >= 2
+            ? parts[0][0] + parts[1][0]
+            : parts[0]?.substring(0, 2) ?? 'PT';
+          return {
+            id: String(p.id),
+            name: p.name,
+            age,
+            gender: p.gender || '—',
+            blood: p.bloodGroup || '—',
+            phone: p.phone || '—',
+            condition: p.condition || '—',
+            lastVisit: p.lastVisit || '—',
+            avatar: avatar.toUpperCase(),
+          };
+        });
+      }
+    });
+    this.patientService.loadPatients();
   }
 
   // ─── Getters ───────────────────────────────────────
@@ -415,6 +347,7 @@ export class DoctorComponent {
   constructor(
     public auth: AuthService,
     private appointmentService: AppointmentService,
+    private patientService: PatientService,
   ) {}
 
   logout(): void {

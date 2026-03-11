@@ -115,10 +115,8 @@
         <label>Patient</label>
         <select [(ngModel)]="newAppointment.patient">
           <option value="">Select Patient</option>
-          @for (p of data.patientList; track $index) {
-            <option [value]="p.name">
-              {{ p.name }}
-            </option>
+          @for (p of patientList; track p.id) {
+            <option [value]="p.name">{{ p.name }}</option>
           }
         </select>
       </div>
@@ -126,12 +124,8 @@
         <label>Doctor</label>
         <select [(ngModel)]="newAppointment.doctor">
           <option value="">Select Doctor</option>
-          @for (s of data.staffList; track $index) {
-            @if (s.role === 'doctor') {
-              <option [value]="s.name">
-                {{ s.name }}
-              </option>
-            }
+          @for (d of doctorList; track d.id) {
+            <option [value]="d.name">{{ d.name }}</option>
           }
         </select>
       </div>

@@ -43,6 +43,8 @@ export interface Appointment {
   time: string;
   status: string;
   notes: string;
+  patient_id?: number;
+  doctor_id?: number;
 }
 export interface BillItem {
   description: string;
@@ -200,9 +202,9 @@ export class DataService {
  ========================= */
   addAppointment(a: Appointment) {
     const payload = {
-      patient_id: 1,
-      doctor_id: 1,
-      department_id: 1,
+      patient_id: a.patient_id || 1,
+      doctor_id: a.doctor_id || 1,
+      department_id: 1, // keeping hardcoded or could add to interface if needed
       start_time: `${a.date}T${a.time}:00`,
       reason: a.notes,
     };

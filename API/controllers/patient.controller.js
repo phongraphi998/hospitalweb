@@ -8,8 +8,23 @@ exports.getPatients = async (req, res) => {
   try {
 
     let query = `
-      SELECT *
-      FROM patients
+      SELECT p.*,
+        (
+          SELECT TO_CHAR(a.start_time, 'DD Mon YYYY')
+          FROM appointments a
+          WHERE a.patient_id = p.id
+          ORDER BY a.start_time DESC
+          LIMIT 1
+        ) AS last_visit,
+        (
+          SELECT mr.diagnosis
+          FROM medical_records mr
+          JOIN appointments a ON mr.appointment_id = a.id
+          WHERE a.patient_id = p.id
+          ORDER BY mr.created_at DESC
+          LIMIT 1
+        ) AS condition
+      FROM patients p
     `;
 
     const values = [];
@@ -17,12 +32,14 @@ exports.getPatients = async (req, res) => {
     if (search) {
       values.push(`%${search}%`);
       query += `
-        WHERE first_name ILIKE $1
-        OR last_name ILIKE $1
+        WHERE p.first_name ILIKE $1
+        OR p.last_name ILIKE $1
+        OR p.phone ILIKE $1
+        OR p.blood_group ILIKE $1
       `;
     }
 
-    query += ` ORDER BY created_at DESC`;
+    query += ` ORDER BY p.created_at DESC`;
 
     const result = await pool.query(query, values);
 
@@ -77,20 +94,33 @@ exports.createPatient = async (req, res) => {
     gender,
     birth_date,
     phone,
-    address
+    address,
+    blood_group,
+    emergency_contact,
+    status
   } = req.body;
 
   try {
 
     const result = await pool.query(
       `INSERT INTO patients
-       (first_name, last_name, gender, birth_date, phone, address)
-       VALUES ($1,$2,$3,$4,$5,$6)
+       (first_name, last_name, gender, birth_date, phone, address, blood_group, emergency_contact, status)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
        RETURNING *`,
-      [first_name, last_name, gender, birth_date, phone, address]
+      [
+        first_name,
+        last_name,
+        gender,
+        birth_date || null,
+        phone,
+        address,
+        blood_group || null,
+        emergency_contact || null,
+        status || 'Active'
+      ]
     );
 
-    res.json(result.rows[0]);
+    res.status(201).json(result.rows[0]);
 
   } catch (error) {
 
@@ -113,7 +143,10 @@ exports.updatePatient = async (req, res) => {
     gender,
     birth_date,
     phone,
-    address
+    address,
+    blood_group,
+    emergency_contact,
+    status
   } = req.body;
 
   try {
@@ -125,10 +158,24 @@ exports.updatePatient = async (req, res) => {
            gender=$3,
            birth_date=$4,
            phone=$5,
-           address=$6
-       WHERE id=$7
+           address=$6,
+           blood_group=$7,
+           emergency_contact=$8,
+           status=$9
+       WHERE id=$10
        RETURNING *`,
-      [first_name, last_name, gender, birth_date, phone, address, id]
+      [
+        first_name,
+        last_name,
+        gender,
+        birth_date || null,
+        phone,
+        address,
+        blood_group || null,
+        emergency_contact || null,
+        status || 'Active',
+        id
+      ]
     );
 
     if (result.rows.length === 0) {

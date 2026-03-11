@@ -44,6 +44,7 @@ hospitalweb/
 ## Next Steps
 
 1. Install dependencies:
+
    ```bash
    npm install
    ```
@@ -51,6 +52,7 @@ hospitalweb/
 2. Copy image assets from the Medilab template to `src/assets/img/` folder
 
 3. Start the development server:
+
    ```bash
    npm start
    ```
@@ -74,7 +76,7 @@ hospitalweb/
 
 ## Technologies
 
-- Angular 17
+- Angular 21
 - Bootstrap 5.3.3
 - TypeScript 5.2.2
 - RxJS 7.8.0

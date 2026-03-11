@@ -4,6 +4,7 @@ const cors = require('cors');
 const authRoutes = require('./routes/auth.routes');
 const appointmentRoutes = require('./routes/appointment.routes'); //มิวเพิ่มบรรทัดนี้มาจ้า
 const patientRoutes = require('./routes/patient.routes');
+const staffRoutes = require('./routes/staff.routes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -20,6 +21,7 @@ app.use(express.json());
 app.use('/auth', authRoutes);
 app.use('/appointments', appointmentRoutes); //มิวเพิ่มบรรทัดนี้มาจ้า
 app.use('/patients', patientRoutes);
+app.use('/staff', staffRoutes);
 
 // Health check
 app.get('/', (req, res) => {

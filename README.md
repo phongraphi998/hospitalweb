@@ -2,7 +2,7 @@
 
 HMS Hospital is a full-stack healthcare management system built with:
 
-- **Frontend**: Angular 17 + Bootstrap 5
+- **Frontend**: Angular 21 + Bootstrap 5
 - **Backend**: Node.js + Express
 - **Database**: PostgreSQL 16 (via Docker Compose — ไม่ต้องติดตั้งบนเครื่อง)
 
