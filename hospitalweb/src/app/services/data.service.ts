@@ -279,7 +279,7 @@ export class DataService {
       patient_id: a.patient_id || 1,
       doctor_id: a.doctor_id || 1,
       department_id: 1, // keeping hardcoded or could add to interface if needed
-      start_time: `${a.date}T${a.time}:00`,
+      start_time: `${a.date || new Date().toISOString().split('T')[0]}T${a.time || '00:00'}:00`,
       reason: a.notes,
     };
 
