@@ -1,23 +1,20 @@
 const express = require('express');
 const router = express.Router();
-const pool = require('../config/db');
+const staffController = require('../controllers/staff.controller');
 
 // GET /staff - returns all staff
-router.get('/', async (req, res) => {
-  try {
-    const result = await pool.query(`
-      SELECT s.id, s.first_name, s.last_name, s.specialization, s.phone,
-             d.name AS department_name, u.role
-      FROM staff s
-      LEFT JOIN departments d ON s.department_id = d.id
-      LEFT JOIN users u ON s.user_id = u.id
-      ORDER BY s.id
-    `);
-    res.json(result.rows);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
+router.get('/', staffController.getAllStaff);
+
+// GET /staff/:id - get staff by id
+router.get('/:id', staffController.getStaffById);
+
+// POST /staff - create a new staff
+router.post('/', staffController.createStaff);
+
+// PUT /staff/:id - update staff
+router.put('/:id', staffController.updateStaff);
+
+// DELETE /staff/:id - delete staff
+router.delete('/:id', staffController.deleteStaff);
 
 module.exports = router;

@@ -245,6 +245,9 @@ CREATE TABLE public.patients (
     birth_date date,
     phone character varying(20),
     address text,
+    blood_group character varying(5),
+    emergency_contact character varying(20),
+    status character varying(20) DEFAULT 'Active',
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
 );
 

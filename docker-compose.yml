@@ -8,14 +8,14 @@ services:
     environment:
       POSTGRES_DB: hospital
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: pg1234
+      POSTGRES_PASSWORD: 12345678
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./hospital_init.sql:/docker-entrypoint-initdb.d/hospital_init.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d hospital"]
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d hospital" ]
       interval: 10s
       timeout: 5s
       retries: 5
