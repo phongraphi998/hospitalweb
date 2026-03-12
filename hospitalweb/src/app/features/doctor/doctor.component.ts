@@ -158,33 +158,38 @@ export class DoctorComponent {
   loadPatientsFromApi() {
     this.patientService.patients$.subscribe((data) => {
       if (data.length > 0) {
-        this.patients = data.map((p) => {
-          // Calculate age from dob
-          let age = 0;
-          if (p.dob) {
-            const birthYear = new Date(p.dob).getFullYear();
-            age = new Date().getFullYear() - birthYear;
-          }
-          // Avatar: first letters of first + last name
-          const parts = p.name.split(' ');
-          const avatar = parts.length >= 2
-            ? parts[0][0] + parts[1][0]
-            : parts[0]?.substring(0, 2) ?? 'PT';
-          const apt = this.appointments.find(a => a.patient === p.name && a.notes);
-          const condition = apt?.notes || p.condition || '—';
+        // Get patient names from appointments (only patients with appointments)
+        const appointmentPatientNames = new Set(this.appointments.map(a => a.patient));
 
-          return {
-            id: String(p.id),
-            name: p.name,
-            age,
-            gender: p.gender || '—',
-            blood: p.bloodGroup || '—',
-            phone: p.phone || '—',
-            condition: condition,
-            lastVisit: p.lastVisit || '—',
-            avatar: avatar.toUpperCase(),
-          };
-        });
+        this.patients = data
+          .filter((p) => appointmentPatientNames.has(p.name)) // Only patients with appointments
+          .map((p) => {
+            // Calculate age from dob
+            let age = 0;
+            if (p.dob) {
+              const birthYear = new Date(p.dob).getFullYear();
+              age = new Date().getFullYear() - birthYear;
+            }
+            // Avatar: first letters of first + last name
+            const parts = p.name.split(' ');
+            const avatar = parts.length >= 2
+              ? parts[0][0] + parts[1][0]
+              : parts[0]?.substring(0, 2) ?? 'PT';
+            const apt = this.appointments.find(a => a.patient === p.name && a.notes);
+            const condition = apt?.notes || p.condition || '—';
+
+            return {
+              id: String(p.id),
+              name: p.name,
+              age,
+              gender: p.gender || '—',
+              blood: p.bloodGroup || '—',
+              phone: p.phone || '—',
+              condition: condition,
+              lastVisit: p.lastVisit || '—',
+              avatar: avatar.toUpperCase(),
+            };
+          });
       }
     });
     this.patientService.loadPatients();

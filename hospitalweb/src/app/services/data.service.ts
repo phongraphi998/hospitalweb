@@ -85,6 +85,7 @@ export class DataService {
     this.syncDepartmentsFromAPI();
     this.syncAppointmentsFromAPI();
     this.syncStaffFromAPI();
+    this.syncPatientsFromAPI();
   }
   /* =========================
     Local Storage
@@ -177,6 +178,34 @@ export class DataService {
           this.appointmentList = appointments;
           this.saveData();
         }
+      });
+  }
+
+  private syncPatientsFromAPI() {
+    this.http
+      .get<any[]>(`${this.API_URL}/patients`)
+      .pipe(
+        catchError((err) => {
+          console.error("Cannot fetch patients from API", err);
+          return of([]);
+        }),
+        map((data) =>
+          data.map((p) => ({
+            id: p.id,
+            name: `${p.first_name} ${p.last_name}`.trim(),
+            gender: p.gender || '',
+            dob: p.birth_date ? p.birth_date.split('T')[0] : '',
+            phone: p.phone || '',
+            address: p.address || '',
+            bloodGroup: p.blood_group || '',
+            emergencyContact: p.emergency_contact || '',
+            status: (p.status === 'Discharged' ? 'Discharged' : 'Active') as 'Active' | 'Discharged',
+          })),
+        ),
+      )
+      .subscribe((patients) => {
+        this.patientList = patients;
+        this.saveData();
       });
   }
 
