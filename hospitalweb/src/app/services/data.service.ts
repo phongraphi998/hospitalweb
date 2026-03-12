@@ -81,6 +81,7 @@ export class DataService {
 
   constructor(private http: HttpClient) {
     this.loadData();
+    this.syncDepartmentsFromAPI();
     this.syncAppointmentsFromAPI();
     this.syncStaffFromAPI();
   }
@@ -88,12 +89,35 @@ export class DataService {
     Local Storage
  ========================= */
   private loadData() {
-    this.departments = JSON.parse(localStorage.getItem("departments") || "[]");
     this.patientList = JSON.parse(localStorage.getItem("patientList") || "[]");
     this.appointmentList = JSON.parse(
       localStorage.getItem("appointmentList") || "[]",
     );
     this.billList = JSON.parse(localStorage.getItem("billList") || "[]");
+  }
+
+  syncDepartmentsFromAPI() {
+    this.http.get<any[]>(`${this.API_URL}/departments`)
+      .pipe(
+        catchError(err => {
+          console.error('Cannot fetch departments from API', err);
+          return of([]);
+        }),
+        map(data => data.map(d => ({
+          id: d.id,
+          code: d.code || '',
+          name: d.name || '',
+          head: d.head || '',
+          phone: d.phone || '',
+          floor: d.floor || '',
+          status: (d.status === 'Inactive' ? 'Inactive' : 'Active') as 'Active' | 'Inactive'
+        })))
+      )
+      .subscribe(departments => {
+        if (departments.length) {
+          this.departments = departments;
+        }
+      });
   }
 
   private syncStaffFromAPI() {
@@ -156,7 +180,6 @@ export class DataService {
   }
 
   private saveData() {
-    localStorage.setItem("departments", JSON.stringify(this.departments));
     localStorage.setItem("staffList", JSON.stringify(this.staffList));
     localStorage.setItem("patientList", JSON.stringify(this.patientList));
     localStorage.setItem(
@@ -169,19 +192,56 @@ export class DataService {
     Department
  ========================= */
   addDepartment(dep: Department) {
-    this.departments.push(dep);
-    this.saveData();
+    const payload = {
+      code: dep.code,
+      name: dep.name,
+      head: dep.head,
+      phone: dep.phone,
+      floor: dep.floor,
+      status: dep.status || 'Active'
+    };
+    this.http.post<any>(`${this.API_URL}/departments`, payload).subscribe({
+      next: () => {
+        this.syncDepartmentsFromAPI();
+      },
+      error: (err) => {
+        console.error('Cannot create department on API', err);
+        this.departments.push(dep);
+      }
+    });
   }
   updateDepartment(dep: Department) {
-    const index = this.departments.findIndex((d) => d.id === dep.id);
-    if (index !== -1) {
-      this.departments[index] = dep;
-      this.saveData();
-    }
+    const payload = {
+      code: dep.code,
+      name: dep.name,
+      head: dep.head,
+      phone: dep.phone,
+      floor: dep.floor,
+      status: dep.status || 'Active'
+    };
+    this.http.put<any>(`${this.API_URL}/departments/${dep.id}`, payload).subscribe({
+      next: () => {
+        this.syncDepartmentsFromAPI();
+      },
+      error: (err) => {
+        console.error('Cannot update department on API', err);
+        const index = this.departments.findIndex((d) => d.id === dep.id);
+        if (index !== -1) {
+          this.departments[index] = dep;
+        }
+      }
+    });
   }
   deleteDepartment(id: number) {
-    this.departments = this.departments.filter((d) => d.id !== id);
-    this.saveData();
+    this.http.delete(`${this.API_URL}/departments/${id}`).subscribe({
+      next: () => {
+        this.syncDepartmentsFromAPI();
+      },
+      error: (err) => {
+        console.error('Cannot delete department on API', err);
+        this.departments = this.departments.filter((d) => d.id !== id);
+      }
+    });
   }
   /* =========================
     Staff

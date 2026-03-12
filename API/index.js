@@ -7,6 +7,7 @@ const appointmentRoutes = require('./routes/appointment.routes'); // มิว
 const patientRoutes = require('./routes/patient.routes');
 const staffRoutes = require('./routes/staff.routes'); // ของเธอ
 const prescriptionRoutes = require('./routes/prescription.routes'); // ใบสั่งยา
+const departmentRoutes = require('./routes/department.routes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -33,6 +34,8 @@ app.use('/patients', patientRoutes);
 app.use('/staff', staffRoutes); // staff API
 
 app.use('/prescriptions', prescriptionRoutes); // ใบสั่งยา
+
+app.use('/departments', departmentRoutes);
 
 
 // ================= HEALTH CHECK =================
