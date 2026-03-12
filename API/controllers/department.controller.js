@@ -4,7 +4,7 @@ const pool = require('../config/db');
 const getAll = async (req, res) => {
   try {
     const result = await pool.query(
-      'SELECT id, code, name, head, phone, floor, status, description, created_at, updated_at FROM departments ORDER BY id ASC'
+      'SELECT id, code, name, head, phone, floor, room, status, description, created_at, updated_at FROM departments ORDER BY id ASC'
     );
     return res.status(200).json(result.rows);
   } catch (error) {
@@ -18,7 +18,7 @@ const getById = async (req, res) => {
   try {
     const { id } = req.params;
     const result = await pool.query(
-      'SELECT id, code, name, head, phone, floor, status, description, created_at, updated_at FROM departments WHERE id = $1',
+      'SELECT id, code, name, head, phone, floor, room, status, description, created_at, updated_at FROM departments WHERE id = $1',
       [id]
     );
 
@@ -36,7 +36,7 @@ const getById = async (req, res) => {
 // POST /departments
 const create = async (req, res) => {
   try {
-    const { code, name, head, phone, floor, status, description } = req.body;
+    const { code, name, head, phone, floor, room, status, description } = req.body;
 
     // Validation
     if (!code || !name) {
@@ -50,15 +50,16 @@ const create = async (req, res) => {
     }
 
     const result = await pool.query(
-      `INSERT INTO departments (code, name, head, phone, floor, status, description, created_at, updated_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
-       RETURNING id, code, name, head, phone, floor, status, description, created_at, updated_at`,
+      `INSERT INTO departments (code, name, head, phone, floor, room, status, description, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())
+       RETURNING id, code, name, head, phone, floor, room, status, description, created_at, updated_at`,
       [
         code,
         name,
         head || '',
         phone || '',
         floor || '',
+        room || '',
         status || 'Active',
         description || null
       ]
@@ -75,7 +76,7 @@ const create = async (req, res) => {
 const update = async (req, res) => {
   try {
     const { id } = req.params;
-    const { code, name, head, phone, floor, status, description } = req.body;
+    const { code, name, head, phone, floor, room, status, description } = req.body;
 
     // Check exists
     const existing = await pool.query('SELECT id FROM departments WHERE id = $1', [id]);
@@ -96,15 +97,16 @@ const update = async (req, res) => {
 
     const result = await pool.query(
       `UPDATE departments
-       SET code = $1, name = $2, head = $3, phone = $4, floor = $5, status = $6, description = $7, updated_at = NOW()
-       WHERE id = $8
-       RETURNING id, code, name, head, phone, floor, status, description, created_at, updated_at`,
+       SET code = $1, name = $2, head = $3, phone = $4, floor = $5, room = $6, status = $7, description = $8, updated_at = NOW()
+       WHERE id = $9
+       RETURNING id, code, name, head, phone, floor, room, status, description, created_at, updated_at`,
       [
         code,
         name,
         head || '',
         phone || '',
         floor || '',
+        room || '',
         status || 'Active',
         description || null,
         id

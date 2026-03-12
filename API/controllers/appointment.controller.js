@@ -13,7 +13,9 @@ exports.getAppointments = async (req, res) => {
       SELECT a.*, 
              p.first_name || ' ' || p.last_name AS patient_name,
              s.first_name || ' ' || s.last_name AS doctor_name,
-             d.name AS department_name
+             d.name AS department_name,
+             d.room AS department_room,
+             d.floor AS department_floor
       FROM appointments a
       JOIN patients p ON a.patient_id = p.id
       JOIN staff s ON a.doctor_id = s.id
@@ -114,7 +116,9 @@ exports.updateStatus = async (req, res) => {
       `SELECT a.*, 
               p.first_name || ' ' || p.last_name AS patient_name,
               s.first_name || ' ' || s.last_name AS doctor_name,
-              d.name AS department_name
+              d.name AS department_name,
+              d.room AS department_room,
+              d.floor AS department_floor
        FROM appointments a
        JOIN patients p ON a.patient_id = p.id
        JOIN staff s ON a.doctor_id = s.id
@@ -140,12 +144,24 @@ exports.createAppointment = async (req, res) => {
 
   try {
 
+    // Auto-resolve department_id from doctor's staff record if not provided
+    let resolvedDeptId = department_id || null;
+    if (doctor_id) {
+      const staffResult = await pool.query(
+        'SELECT department_id FROM staff WHERE id = $1',
+        [doctor_id]
+      );
+      if (staffResult.rows.length > 0 && staffResult.rows[0].department_id) {
+        resolvedDeptId = staffResult.rows[0].department_id;
+      }
+    }
+
     const result = await pool.query(
       `INSERT INTO appointments
        (patient_id, doctor_id, department_id, start_time, reason)
        VALUES ($1,$2,$3,$4,$5)
        RETURNING *`,
-      [patient_id, doctor_id, department_id, start_time, reason]
+      [patient_id, doctor_id, resolvedDeptId, start_time, reason]
     );
 
     res.json(result.rows[0]);

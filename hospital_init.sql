@@ -162,6 +162,7 @@ CREATE TABLE public.departments (
     head character varying(150) DEFAULT '',
     phone character varying(20) DEFAULT '',
     floor character varying(20) DEFAULT '',
+    room character varying(50) DEFAULT '',
     status character varying(20) DEFAULT 'Active',
     description text,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
@@ -552,9 +553,9 @@ COPY public.billing (id, appointment_id, total_amount, status, issued_at, paid_a
 -- Data for Name: departments; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.departments (id, code, name, head, phone, floor, status, description, created_at, updated_at) FROM stdin;
-1	C	Cardiology	Dr. Somchai Jaidee	02-111-0001	3	Active	Heart and cardiovascular treatments	2026-03-05 01:51:06.952624	2026-03-05 01:51:06.952624
-2	GM	General Medicine	Dr. Suda Dee	02-111-0002	1	Active	General health and diagnosis	2026-03-05 01:51:06.952624	2026-03-05 01:51:06.952624
+COPY public.departments (id, code, name, head, phone, floor, room, status, description, created_at, updated_at) FROM stdin;
+1	C	Cardiology	Dr. Somchai Jaidee	02-111-0001	3	301	Active	Heart and cardiovascular treatments	2026-03-05 01:51:06.952624	2026-03-05 01:51:06.952624
+2	GM	General Medicine	Dr. Suda Dee	02-111-0002	1	101	Active	General health and diagnosis	2026-03-05 01:51:06.952624	2026-03-05 01:51:06.952624
 \.
 
 
@@ -959,6 +960,9 @@ ALTER TABLE ONLY public.staff
 ALTER TABLE ONLY public.staff
     ADD CONSTRAINT staff_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
 
+
+-- Fix existing appointments: resolve department_id from doctor's staff record
+UPDATE appointments a SET department_id = s.department_id FROM staff s WHERE a.doctor_id = s.id;
 
 -- Completed on 2026-03-10 18:18:54
 

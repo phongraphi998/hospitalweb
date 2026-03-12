@@ -11,6 +11,7 @@ export interface Department {
   head: string;
   phone: string;
   floor: string;
+  room: string;
   status: "Active" | "Inactive";
 }
 export interface Staff {
@@ -110,6 +111,7 @@ export class DataService {
           head: d.head || '',
           phone: d.phone || '',
           floor: d.floor || '',
+          room: d.room || '',
           status: (d.status === 'Inactive' ? 'Inactive' : 'Active') as 'Active' | 'Inactive'
         })))
       )
@@ -163,8 +165,7 @@ export class DataService {
               const s = (a.status || '').toLowerCase();
               if (s === "completed") return "Completed";
               if (s === "cancelled") return "Cancelled";
-              if (s === "checked_in") return "Scheduled";
-              if (s === "pending") return "Scheduled";
+              if (s === "checked_in") return "Checked In";
               return "Scheduled";
             })(),
             notes: a.reason || "",
@@ -198,6 +199,7 @@ export class DataService {
       head: dep.head,
       phone: dep.phone,
       floor: dep.floor,
+      room: dep.room,
       status: dep.status || 'Active'
     };
     this.http.post<any>(`${this.API_URL}/departments`, payload).subscribe({
@@ -217,6 +219,7 @@ export class DataService {
       head: dep.head,
       phone: dep.phone,
       floor: dep.floor,
+      room: dep.room,
       status: dep.status || 'Active'
     };
     this.http.put<any>(`${this.API_URL}/departments/${dep.id}`, payload).subscribe({
@@ -336,7 +339,6 @@ export class DataService {
     const payload = {
       patient_id: a.patient_id || 1,
       doctor_id: a.doctor_id || 1,
-      department_id: 1, // keeping hardcoded or could add to interface if needed
       start_time: `${a.date || new Date().toISOString().split('T')[0]}T${a.time || '00:00'}:00`,
       reason: a.notes,
     };
@@ -369,7 +371,14 @@ export class DataService {
     }
 
     if (a.id) {
-      const status = String(a.status).toUpperCase();
+      const statusMap: { [key: string]: string } = {
+        'Scheduled': 'PENDING',
+        'Pending': 'PENDING',
+        'Checked In': 'CHECKED_IN',
+        'Completed': 'COMPLETED',
+        'Cancelled': 'CANCELLED',
+      };
+      const status = statusMap[a.status] || String(a.status).toUpperCase();
       const start_time = a.date && a.time
         ? `${a.date}T${a.time.length === 5 ? a.time + ':00' : a.time}`
         : undefined;

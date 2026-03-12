@@ -1,13 +1,31 @@
 const pool = require('../config/db');
 
-// GET /prescriptions?doctor_id=X
+// GET /prescriptions?doctor_id=X or ?user_id=X
 // ดึงใบสั่งยาของ doctor นี้
 exports.getPrescriptionsByDoctor = async (req, res) => {
-  const { doctor_id } = req.query;
+  let { doctor_id, user_id } = req.query;
+
+  // If user_id is provided, resolve to staff.id (doctor_id)
+  if (!doctor_id && user_id) {
+    try {
+      const staffResult = await pool.query(
+        'SELECT id FROM staff WHERE user_id = $1',
+        [user_id]
+      );
+      if (staffResult.rows.length > 0) {
+        doctor_id = staffResult.rows[0].id;
+      } else {
+        return res.json({ success: true, count: 0, data: [] });
+      }
+    } catch (err) {
+      console.error('Error resolving user_id to staff:', err);
+      return res.status(500).json({ error: 'Failed to resolve user' });
+    }
+  }
 
   if (!doctor_id) {
     return res.status(400).json({ 
-      error: 'doctor_id is required as query parameter' 
+      error: 'doctor_id or user_id is required as query parameter' 
     });
   }
 

@@ -225,6 +225,7 @@
                 <th>Time</th>
                 <th>Type</th>
                 <th>Room</th>
+                <th>Floor</th>
                 <th>Status</th>
                 <th>Action</th>
               </tr>
@@ -258,6 +259,7 @@
                   </td>
                   <td>{{ apt.type }}</td>
                   <td>{{ apt.room }}</td>
+                  <td>{{ apt.floor }}</td>
                   <td>
                     <span class="dd-status" [class]="apt.status">{{
                       apt.status

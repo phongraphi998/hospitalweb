@@ -34,6 +34,8 @@ export class NurseComponent implements OnInit {
             department: a.department || "Outpatient Department (OPD)",
             doctor: a.doctor,
             time: a.time,
+            room: a.room || '',
+            floor: a.floor || '',
             status: a.status.toUpperCase(),
           }));
       },
@@ -48,7 +50,7 @@ export class NurseComponent implements OnInit {
   }
 
   get checkedQueue() {
-    return this.queues.filter((q) => q.status === "CHECKED_IN");
+    return this.queues.filter((q) => q.status === "CONFIRMED");
   }
 
   checkIn(queue: any) {
@@ -56,7 +58,7 @@ export class NurseComponent implements OnInit {
 
     this.appointmentService.updateStatus(Number(queue.id), "CHECKED_IN").subscribe(
       () => {
-        queue.status = "CHECKED_IN";
+        queue.status = "CONFIRMED";
       },
       (err) => {
         console.error("Failed to check in", err);

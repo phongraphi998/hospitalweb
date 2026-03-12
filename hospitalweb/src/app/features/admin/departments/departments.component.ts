@@ -52,6 +52,7 @@ export class DepartmentsComponent {
       head: "",
       phone: "",
       floor: "",
+      room: "",
       status: "Active",
     };
   }
@@ -125,7 +126,8 @@ export class DepartmentsComponent {
         dep.name.toLowerCase().includes(keyword) ||
         dep.code.toLowerCase().includes(keyword) ||
         dep.head.toLowerCase().includes(keyword) ||
-        dep.floor.toLowerCase().includes(keyword),
+        dep.floor.toLowerCase().includes(keyword) ||
+        dep.room.toLowerCase().includes(keyword),
     );
   }
 }

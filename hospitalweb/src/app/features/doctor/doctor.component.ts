@@ -15,6 +15,7 @@ export interface Appointment {
   type: string;
   status: "confirmed" | "pending" | "completed";
   room: string;
+  floor: string;
   notes?: string;
 }
 
@@ -117,53 +118,7 @@ export class DoctorComponent {
     },
   ];
 
-  prescriptions: Prescription[] = [
-    {
-      id: "RX-001",
-      patient: "Somchai Jaidee",
-      date: "26 Feb 2026",
-      medication: "Amlodipine 5mg",
-      dosage: "1 tablet once daily",
-      duration: "30 days",
-      status: "active",
-    },
-    {
-      id: "RX-002",
-      patient: "Prasert Khumma",
-      date: "18 Feb 2026",
-      medication: "Metformin 500mg",
-      dosage: "1 tablet twice daily with meals",
-      duration: "60 days",
-      status: "active",
-    },
-    {
-      id: "RX-003",
-      patient: "Napa Taweesuk",
-      date: "15 Feb 2026",
-      medication: "Topiramate 25mg",
-      dosage: "1 tablet at bedtime",
-      duration: "90 days",
-      status: "active",
-    },
-    {
-      id: "RX-004",
-      patient: "Somchai Jaidee",
-      date: "10 Jan 2026",
-      medication: "Lisinopril 10mg",
-      dosage: "1 tablet once daily",
-      duration: "30 days",
-      status: "completed",
-    },
-    {
-      id: "RX-005",
-      patient: "Malee Srisuk",
-      date: "10 Feb 2026",
-      medication: "Warfarin 5mg",
-      dosage: "1 tablet once daily",
-      duration: "30 days",
-      status: "active",
-    },
-  ];
+  prescriptions: Prescription[] = [];
 
   ngOnInit() {
     this.loadAppointmentsFromApi();
@@ -182,7 +137,8 @@ export class DoctorComponent {
             date: a.date,
             type: a.department || 'General',
             status: a.status as 'confirmed' | 'pending' | 'completed',
-            room: a.department || 'Room 101',
+            room: a.room || '',
+            floor: a.floor || '',
             notes: a.notes,
           }));
           
@@ -235,35 +191,31 @@ export class DoctorComponent {
   }
 
   loadPrescriptionsFromApi() {
-    const doctorId = this.auth.getUserId();
-    if (doctorId) {
-      this.prescriptionService.getPrescriptionsByDoctor(parseInt(doctorId)).subscribe(
+    const user = this.auth.getCurrentUserSync();
+    if (user && user.id) {
+      this.prescriptionService.getPrescriptionsByUser(user.id).subscribe(
         (response) => {
-          if (response.success && response.data && response.data.length > 0) {
-            // Fetch prescriptions from API
-            const apiPrescriptions = response.data.map((p: any) => ({
-              id: `RX-${p.prescription_id}`,
-              patient: p.patient_name,
-              date: new Date(p.prescription_date).toLocaleDateString("en-GB", {
-                day: "2-digit",
-                month: "short",
-                year: "numeric",
-              }),
-              medication: p.prescription_items.map((item: any) => item.medicine_name).join(', '),
-              dosage: p.prescription_items.map((item: any) => item.dosage).join('; '),
-              duration: p.prescription_items.map((item: any) => `${item.duration_days} days`).join('; '),
-              status: "active" as const,
-            }));
-            
-            // Replace mock data with API data if available
-            if (apiPrescriptions.length > 0) {
-              this.prescriptions = [...apiPrescriptions, ...this.prescriptions];
-            }
+          if (response.success && response.data) {
+            this.prescriptions = response.data.map((p: any) => {
+              const items = (p.prescription_items || []).filter((item: any) => item.id !== null);
+              return {
+                id: `RX-${String(p.prescription_id).padStart(3, '0')}`,
+                patient: p.patient_name,
+                date: new Date(p.prescription_date).toLocaleDateString("en-GB", {
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric",
+                }),
+                medication: items.map((item: any) => `${item.medicine_name} ${item.dosage}`).join(', ') || '—',
+                dosage: items.map((item: any) => item.frequency).join('; ') || '—',
+                duration: items.map((item: any) => `${item.duration_days} days`).join('; ') || '—',
+                status: "active" as const,
+              };
+            });
           }
         },
         (error) => {
           console.error('Error loading prescriptions from API:', error);
-          // Keep mock data if API fails
         }
       );
     }
@@ -401,26 +353,9 @@ export class DoctorComponent {
     ).subscribe(
       (response) => {
         if (response.success) {
-          const today = new Date();
-          const dateStr = today.toLocaleDateString("en-GB", {
-            day: "2-digit",
-            month: "short",
-            year: "numeric",
-          });
-          const id = `RX-${String(this.prescriptions.length + 1).padStart(3, "0")}`;
-          
-          this.prescriptions.unshift({
-            id,
-            patient: this.newRx.patient!,
-            date: dateStr,
-            medication: this.newRx.medication!,
-            dosage: this.newRx.dosage!,
-            duration: this.newRx.duration!,
-            status: "active",
-          });
-          
+          this.loadPrescriptionsFromApi();
           this.closeRxModal();
-          this.showToast(`✓ Prescription ${id} issued for ${selectedAppointment.patient}`);
+          this.showToast(`✓ Prescription issued for ${selectedAppointment.patient}`);
         }
       },
       (error) => {

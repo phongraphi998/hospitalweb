@@ -13,6 +13,8 @@ export interface ApiAppointment {
   patient_name?: string;
   doctor_name?: string;
   department_name?: string;
+  department_room?: string;
+  department_floor?: string;
 }
 
 export interface Appointment {
@@ -30,6 +32,8 @@ export interface Appointment {
     | 'scheduled';
   notes: string;
   department?: string;
+  room?: string;
+  floor?: string;
 }
 
 export interface AppointmentForm {
@@ -81,7 +85,6 @@ export class AppointmentService {
     const payload = {
       patient_id: 1,
       doctor_id: 1,
-      department_id: 1,
       start_time: `${appointment.date}T00:00:00`,
       reason: appointment.message || `${appointment.name} / ${appointment.email}`,
     };
@@ -139,6 +142,8 @@ export class AppointmentService {
       patient: api.patient_name || `Patient ${api.patient_id}`,
       doctor: api.doctor_name || `Doctor ${api.doctor_id}`,
       department: api.department_name || `Department ${api.department_id}`,
+      room: api.department_room || '',
+      floor: api.department_floor || '',
       date: !Number.isNaN(datetime.getTime())
         ? datetime.toISOString().split('T')[0]
         : api.start_time,

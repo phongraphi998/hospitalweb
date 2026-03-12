@@ -37,6 +37,7 @@
         <th>Head</th>
         <th>Phone</th>
         <th>Floor</th>
+        <th>Room</th>
         <th>Status</th>
         <th class="text-center">Actions</th>
       </tr>
@@ -58,6 +59,7 @@
         <td>{{ dep.head }}</td>
         <td>{{ dep.phone }}</td>
         <td>{{ dep.floor }}</td>
+        <td>{{ dep.room }}</td>
         <td>
           <span
             class="status-badge"
@@ -122,6 +124,11 @@
       <div class="form-group">
         <label>Floor</label>
         <input [(ngModel)]="newDepartment.floor" />
+      </div>
+      <!-- ROOM -->
+      <div class="form-group">
+        <label>Room</label>
+        <input [(ngModel)]="newDepartment.room" placeholder="e.g. 301" />
       </div>
       <!-- STATUS -->
       <div class="form-group">
