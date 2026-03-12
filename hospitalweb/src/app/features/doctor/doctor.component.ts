@@ -191,9 +191,8 @@ export class DoctorComponent {
   }
 
   loadPrescriptionsFromApi() {
-    const user = this.auth.getCurrentUserSync();
-    if (user && user.id) {
-      this.prescriptionService.getPrescriptionsByUser(user.id).subscribe(
+    // Fetch all prescriptions (for testing/demo - no doctor filter)
+    this.prescriptionService.getAllPrescriptions().subscribe(
         (response) => {
           if (response.success && response.data) {
             this.prescriptions = response.data.map((p: any) => {
@@ -218,7 +217,6 @@ export class DoctorComponent {
           console.error('Error loading prescriptions from API:', error);
         }
       );
-    }
   }
 
   // ─── Getters ───────────────────────────────────────

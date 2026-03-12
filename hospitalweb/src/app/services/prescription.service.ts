@@ -10,6 +10,10 @@ export class PrescriptionService {
 
   constructor(private http: HttpClient) { }
 
+  getAllPrescriptions(): Observable<any> {
+    return this.http.get<any>(this.apiUrl);
+  }
+
   getPrescriptionsByDoctor(doctor_id: number): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}?doctor_id=${doctor_id}`);
   }

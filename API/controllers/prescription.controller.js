@@ -24,9 +24,50 @@ exports.getPrescriptionsByDoctor = async (req, res) => {
   }
 
   if (!doctor_id) {
-    return res.status(400).json({ 
-      error: 'doctor_id or user_id is required as query parameter' 
-    });
+    // Return all prescriptions (for testing/demo purposes)
+    try {
+      const query = `
+        SELECT 
+          p.id as prescription_id,
+          p.appointment_id,
+          p.created_at as prescription_date,
+          a.patient_id,
+          pt.first_name || ' ' || pt.last_name AS patient_name,
+          s.first_name || ' ' || s.last_name AS doctor_name,
+          d.name AS department_name,
+          json_agg(json_build_object(
+            'id', pi.id,
+            'medicine_name', pi.medicine_name,
+            'dosage', pi.dosage,
+            'frequency', pi.frequency,
+            'duration_days', pi.duration_days,
+            'created_at', pi.created_at
+          )) AS prescription_items
+        FROM prescriptions p
+        JOIN appointments a ON p.appointment_id = a.id
+        JOIN patients pt ON a.patient_id = pt.id
+        JOIN staff s ON a.doctor_id = s.id
+        LEFT JOIN departments d ON a.department_id = d.id
+        LEFT JOIN prescription_items pi ON p.id = pi.prescription_id
+        GROUP BY p.id, p.appointment_id, p.created_at, a.patient_id, 
+                 pt.first_name, pt.last_name, s.first_name, s.last_name, d.name
+        ORDER BY p.created_at DESC
+      `;
+
+      const result = await pool.query(query);
+
+      return res.json({
+        success: true,
+        count: result.rows.length,
+        data: result.rows
+      });
+    } catch (error) {
+      console.error('Error fetching all prescriptions:', error);
+      return res.status(500).json({
+        error: 'Failed to fetch prescriptions',
+        details: error.message
+      });
+    }
   }
 
   try {
