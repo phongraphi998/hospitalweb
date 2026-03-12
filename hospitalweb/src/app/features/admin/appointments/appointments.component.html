@@ -58,8 +58,10 @@
             [ngClass]="{
               scheduled: a.status === 'Scheduled',
               'checked-in': a.status === 'Checked In',
+              pending: a.status === 'Pending',
               completed: a.status === 'Completed',
               cancelled: a.status === 'Cancelled',
+
             }"
           >
             {{ a.status }}

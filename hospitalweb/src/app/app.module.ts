@@ -14,7 +14,9 @@ import { LoginComponent } from "./features/login/login.component";
 import { DoctorComponent } from "./features/doctor/doctor.component";
 import { NurseComponent } from "./features/nurse/nurse.component";
 import { AdminComponent } from "./features/admin/admin.component";
+import { DashboardComponent } from "./features/admin/dashboard/dashboard.component";
 import { DepartmentsComponent } from "./features/admin/departments/departments.component";
+
 import { StaffComponent } from "./features/admin/staff/staff.component";
 import { PatientsComponent } from "./features/admin/patients/patients.component";
 import { AppointmentsComponent } from "./features/admin/appointments/appointments.component";
@@ -32,7 +34,9 @@ import { AuthInterceptor } from "./core/interceptors/auth.interceptor";
     DoctorComponent,
     NurseComponent,
     AdminComponent,
+    DashboardComponent,
     DepartmentsComponent,
+
     StaffComponent,
     PatientsComponent,
     AppointmentsComponent,

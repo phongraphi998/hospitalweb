@@ -146,31 +146,8 @@ tbody tr:hover {
 }
 
 
-.status {
-  padding: 5px 10px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
+/* .status styles removed - using global .status-badge from styles.css */
 
-}
-
-.scheduled {
-  background: #dbeafe;
-  color: #1d4ed8;
-
-}
-
-.completed {
-  background: #d1fae5;
-  color: #047857;
-
-}
-
-.cancelled {
-  background: #fee2e2;
-  color: #b91c1c;
-
-}
 
 .empty {
   text-align: center;

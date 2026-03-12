@@ -57,14 +57,19 @@
           <td>{{ a.time }}</td>
           <td>
             <span
-              class="status"
-              [class.scheduled]="a.status === 'Scheduled'"
-              [class.completed]="a.status === 'Completed'"
-              [class.cancelled]="a.status === 'Cancelled'"
+              class="status-badge"
+              [ngClass]="{
+                'scheduled': a.status === 'Scheduled',
+                'checked-in': a.status === 'Checked In',
+                'pending': a.status === 'Pending',
+                'completed': a.status === 'Completed',
+                'cancelled': a.status === 'Cancelled'
+              }"
             >
               {{ a.status }}
             </span>
           </td>
+
         </tr>
         }
         @if (todaysAppointments.length === 0) {
