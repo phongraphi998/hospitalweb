@@ -34,11 +34,14 @@ app.use('/patients', patientRoutes);
 
 app.use('/staff', staffRoutes); // staff API
 
+app.use('/medical-records', require('./routes/medicalRecord.routes')); // เพิ่ม Medical Records
+
 app.use('/prescriptions', prescriptionRoutes); // ใบสั่งยา
 
 app.use('/departments', departmentRoutes);
 
 app.use('/billing', billingRoutes); // Billing API
+
 
 
 // ================= HEALTH CHECK =================

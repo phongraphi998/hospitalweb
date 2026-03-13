@@ -6,6 +6,7 @@ import {
 } from "../../services/appointment.service";
 import { PatientService } from "../../services/patient.service";
 import { PrescriptionService } from "../../services/prescription.service";
+import { MedicalRecordService } from "../../services/medical-record.service";
 
 export interface Appointment {
   id: string;
@@ -65,6 +66,7 @@ export class DoctorComponent {
 
   // ── Record form ──
   newRecord: Partial<MedicalRecord> = {};
+  selectedAppointmentForRecordId: string = "";
 
   // ── Prescription form ──
   newRx: Partial<Prescription> = {};
@@ -79,51 +81,39 @@ export class DoctorComponent {
 
   patients: Patient[] = [];
 
-  records: MedicalRecord[] = [
-    {
-      id: "REC-001",
-      patient: "Somchai Jaidee",
-      date: "26 Feb 2026",
-      diagnosis: "Stage 1 Hypertension",
-      notes:
-        "BP 145/92 mmHg. Prescribed Amlodipine 5mg. Advised low-sodium diet and regular exercise.",
-      doctor: "Dr. doctor01",
-    },
-    {
-      id: "REC-002",
-      patient: "Prasert Khumma",
-      date: "18 Feb 2026",
-      diagnosis: "Diabetes Type 2 – Stable",
-      notes:
-        "HbA1c 7.2%. Continue Metformin 500mg. Blood glucose monitoring twice daily.",
-      doctor: "Dr. doctor01",
-    },
-    {
-      id: "REC-003",
-      patient: "Napa Taweesuk",
-      date: "15 Feb 2026",
-      diagnosis: "Chronic Migraine",
-      notes:
-        "Frequency: 4–5 episodes/month. Prescribed Topiramate 25mg preventive therapy.",
-      doctor: "Dr. doctor01",
-    },
-    {
-      id: "REC-004",
-      patient: "Malee Srisuk",
-      date: "10 Feb 2026",
-      diagnosis: "Atrial Fibrillation",
-      notes:
-        "ECG confirmed AF. Referred to cardiologist. Anticoagulation therapy initiated.",
-      doctor: "Dr. doctor01",
-    },
-  ];
+  records: MedicalRecord[] = [];
 
   prescriptions: Prescription[] = [];
 
   ngOnInit() {
     this.loadAppointmentsFromApi();
     this.loadPatientsFromApi();
+    this.loadMedicalRecordsFromApi();
     this.loadPrescriptionsFromApi();
+  }
+
+  loadMedicalRecordsFromApi() {
+    this.medicalRecordService.getMedicalRecordsByDoctor().subscribe(
+      (response) => {
+        if (response.success && response.data) {
+          this.records = response.data.map((r: any) => ({
+            id: `REC-${String(r.record_id).padStart(3, '0')}`,
+            patient: r.patient_name,
+            date: new Date(r.record_date).toLocaleDateString("en-GB", {
+              day: "2-digit",
+              month: "short",
+              year: "numeric",
+            }),
+            diagnosis: r.diagnosis,
+            notes: r.notes,
+            doctor: `Dr. ${r.doctor_name}`,
+          }));
+        }
+      },
+      (error) => {
+        console.error('Error loading medical records', error);
+      }
+    );
   }
 
   loadAppointmentsFromApi() {
@@ -271,37 +261,52 @@ export class DoctorComponent {
   // ─── Medical Record Modal ──────────────────────────
   openRecordModal() {
     this.newRecord = { patient: "", diagnosis: "", notes: "" };
+    this.selectedAppointmentForRecordId = "";
     this.showRecordModal = true;
   }
 
   closeRecordModal() {
     this.showRecordModal = false;
+    this.selectedAppointmentForRecordId = "";
   }
 
   submitRecord() {
     if (
       !this.newRecord.patient ||
       !this.newRecord.diagnosis ||
-      !this.newRecord.notes
+      !this.newRecord.notes ||
+      !this.selectedAppointmentForRecordId
     )
       return;
-    const today = new Date();
-    const dateStr = today.toLocaleDateString("en-GB", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    });
-    const id = `REC-${String(this.records.length + 1).padStart(3, "0")}`;
-    this.records.unshift({
-      id,
-      patient: this.newRecord.patient!,
-      date: dateStr,
+
+    const selectedAppointment = this.appointments.find(a => a.id === this.selectedAppointmentForRecordId);
+    if (!selectedAppointment) {
+      this.showToast(`⚠️ Please select a valid appointment`);
+      return;
+    }
+
+    this.medicalRecordService.createMedicalRecord({
+      appointment_id: Number(this.selectedAppointmentForRecordId),
       diagnosis: this.newRecord.diagnosis!,
-      notes: this.newRecord.notes!,
-      doctor: `Dr. ${this.auth.getUserId() || "Doctor"}`,
-    });
-    this.closeRecordModal();
-    this.showToast(`✓ Medical record ${id} saved successfully`);
+      treatment: "",
+      notes: this.newRecord.notes!
+    }).subscribe(
+      (response) => {
+        if (response.success) {
+          this.loadMedicalRecordsFromApi();
+          this.closeRecordModal();
+          this.showToast(`✓ Medical record saved successfully`);
+        }
+      },
+      (error) => {
+         console.error('Error creating medical record:', error);
+         if (error.error?.error === 'Medical record already exists for this appointment') {
+           this.showToast(`⚠️ A medical record already exists for this appointment.`);
+         } else {
+           this.showToast(`✗ Failed to create medical record`);
+         }
+      }
+    );
   }
 
   // ─── Prescription Modal ────────────────────────────
@@ -387,6 +392,7 @@ export class DoctorComponent {
     private appointmentService: AppointmentService,
     private patientService: PatientService,
     private prescriptionService: PrescriptionService,
+    private medicalRecordService: MedicalRecordService,
   ) {}
 
   logout(): void {
