@@ -26,53 +26,73 @@
   </div>
 </div>
 
+<!-- ================= LOADING ================= -->
+@if (loading) {
+  <div class="table-card" style="text-align: center; padding: 40px;">
+    <p style="color: #64748b;">Loading billing data...</p>
+  </div>
+}
+
+<!-- ================= TABLE ================= -->
+@if (!loading) {
 <div class="table-card">
+  @if (filteredBills.length === 0) {
+    <div style="text-align: center; padding: 40px; color: #94a3b8;">
+      <i class="bi bi-inbox" style="font-size: 48px; display: block; margin-bottom: 12px;"></i>
+      <p>No billing records found</p>
+    </div>
+  }
+
+  @if (filteredBills.length > 0) {
   <table class="custom-table">
     <thead>
       <tr>
         <th>Receipt No</th>
         <th>Patient</th>
         <th>Total</th>
+        <th>Date</th>
         <th>Status</th>
         <th class="text-center">Actions</th>
       </tr>
     </thead>
     <tbody>
-      @for (bill of filteredBills; track $index) {
+      @for (bill of filteredBills; track bill.id) {
         <tr>
         <td>
-          <span class="code-badge">{{ bill.invoiceNo }}</span>
+          <span class="code-badge">{{ getInvoiceNo(bill) }}</span>
         </td>
         <td>
           <div class="name-cell">
             <div class="avatar">
-              {{ bill.patient.charAt(0) }}
+              {{ getPatientInitial(bill) }}
             </div>
-            <span>{{ bill.patient }}</span>
+            <span>{{ bill.patient_name || 'N/A' }}</span>
           </div>
         </td>
-        <td>{{ bill.grandTotal | number }} ฿</td>
+        <td>{{ bill.total_amount | number }} ฿</td>
+        <td>{{ bill.issued_at | date:'dd/MM/yyyy' }}</td>
         <td>
           <span
             class="status-badge"
-            [ngClass]="bill.status === 'Paid' ? 'active' : 'inactive'"
+            [ngClass]="bill.status === 'PAID' ? 'active' : 'inactive'"
           >
             {{ bill.status }}
           </span>
         </td>
         <td class="actions">
-          @if (bill.status === 'Unpaid') {
+          @if (bill.status === 'UNPAID') {
             <button
               class="icon-btn edit"
               (click)="markPaid(bill)"
+              title="Mark as Paid"
             >
               <i class="bi bi-check-circle"></i>
             </button>
           }
-          <button class="icon-btn" (click)="openPrint(bill)">
+          <button class="icon-btn" (click)="openPrint(bill)" title="Print Receipt">
             <i class="bi bi-printer"></i>
           </button>
-          <button class="icon-btn delete" (click)="deleteBill(bill.id)">
+          <button class="icon-btn delete" (click)="deleteBill(bill.id)" title="Delete">
             <i class="bi bi-trash"></i>
           </button>
         </td>
@@ -80,8 +100,11 @@
       }
     </tbody>
   </table>
+  }
 </div>
+}
 
+<!-- ================= CREATE FORM MODAL ================= -->
 @if (showForm) {
   <div class="modal-overlay">
     <div class="modal-box">
@@ -93,10 +116,21 @@
     </div>
     <div class="form-grid">
       <div class="form-group">
+        <label>Appointment (Optional)</label>
+        <select [(ngModel)]="selectedAppointmentId" (ngModelChange)="onAppointmentChange()">
+          <option [ngValue]="null">-- No Appointment --</option>
+          @for (a of data.appointmentList; track a.id) {
+            <option [ngValue]="a.id">
+              #{{ a.id }} - {{ a.patient }} ({{ a.date }}) [{{ a.status }}]
+            </option>
+          }
+        </select>
+      </div>
+      <div class="form-group">
         <label>Patient</label>
-        <select [(ngModel)]="newBill.patient">
+        <select [(ngModel)]="newPatient">
           <option value="">Select Patient</option>
-          @for (p of data.patientList; track $index) {
+          @for (p of data.patientList; track p.id) {
             <option [value]="p.name">
               {{ p.name }}
             </option>
@@ -107,8 +141,7 @@
         <label>Discount</label>
         <input
           type="number"
-          [(ngModel)]="newBill.discount"
-          (input)="calculateTotals()"
+          [(ngModel)]="newDiscount"
         />
       </div>
     </div>
@@ -134,7 +167,7 @@
       Add Item
     </button>
     <hr />
-    @for (i of newBill.items; track $index) {
+    @for (i of newItems; track $index) {
       <div class="item-row">
         <span>{{ i.description }}</span>
         <span>{{ i.qty }} x {{ i.price | number }}</span>
@@ -146,8 +179,9 @@
     }
     <hr />
     <div class="totals">
-      <p>Subtotal: {{ newBill.subtotal | number }} ฿</p>
-      <h3>Total: {{ newBill.grandTotal | number }} ฿</h3>
+      <p>Subtotal: {{ subtotal | number }} ฿</p>
+      <p *ngIf="newDiscount > 0">Discount: -{{ newDiscount | number }} ฿</p>
+      <h3>Total: {{ grandTotal | number }} ฿</h3>
     </div>
     <div class="modal-actions">
       <button class="primary-btn" (click)="saveBill()">Save</button>
@@ -169,12 +203,13 @@
       <h3>OFFICIAL RECEIPT</h3>
     </div>
     <div class="receipt-info">
-      <p><strong>Receipt No:</strong> {{ selectedBill.invoiceNo }}</p>
+      <p><strong>Receipt No:</strong> {{ getInvoiceNo(selectedBill) }}</p>
       <p>
         <strong>Date:</strong>
-        {{ selectedBill.createdAt | date: "dd/MM/yyyy HH:mm" }}
+        {{ selectedBill.issued_at | date: "dd/MM/yyyy HH:mm" }}
       </p>
-      <p><strong>Patient:</strong> {{ selectedBill.patient }}</p>
+      <p><strong>Patient:</strong> {{ selectedBill.patient_name || 'N/A' }}</p>
+      <p *ngIf="selectedBill.paid_at"><strong>Paid At:</strong> {{ selectedBill.paid_at | date: "dd/MM/yyyy HH:mm" }}</p>
     </div>
     <table class="receipt-table">
       <thead>
@@ -186,7 +221,7 @@
         </tr>
       </thead>
       <tbody>
-        @for (item of selectedBill.items; track $index) {
+        @for (item of selectedBill.items; track item.id) {
           <tr>
             <td>{{ item.description }}</td>
             <td>{{ item.qty }}</td>
@@ -197,9 +232,9 @@
       </tbody>
     </table>
     <div class="receipt-total">
-      <p>Subtotal: {{ selectedBill.subtotal | number }} ฿</p>
-      <p>Discount: {{ selectedBill.discount | number }} ฿</p>
-      <h3>Grand Total: {{ selectedBill.grandTotal | number }} ฿</h3>
+      <p>Subtotal: {{ getItemsTotal(selectedBill) | number }} ฿</p>
+      <h3>Grand Total: {{ selectedBill.total_amount | number }} ฿</h3>
+      <p><strong>Status:</strong> {{ selectedBill.status }}</p>
     </div>
     <div class="signature">
       <br /><br />
