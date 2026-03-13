@@ -86,6 +86,7 @@ export class DataService {
     this.syncAppointmentsFromAPI();
     this.syncStaffFromAPI();
     this.syncPatientsFromAPI();
+    this.syncBillingsFromAPI();
   }
   /* =========================
     Local Storage
@@ -437,19 +438,92 @@ export class DataService {
   /* =========================
     Billing
  ========================= */
+  syncBillingsFromAPI() {
+    this.http.get<any[]>(`${this.API_URL}/billing`)
+      .pipe(
+        catchError(err => {
+          console.error('Cannot fetch billings from API', err);
+          return of([]);
+        }),
+        map(data => data.map(b => ({
+          id: b.id,
+          invoiceNo: 'RC-' + String(b.id).padStart(5, '0'),
+          patient: b.patient_name || 'N/A',
+          items: (b.items || []).map((i: any) => ({
+            description: i.description,
+            qty: i.qty,
+            price: Number(i.price),
+            total: Number(i.total),
+          })),
+          subtotal: (b.items || []).reduce((s: number, i: any) => s + Number(i.total), 0),
+          vat: 0,
+          discount: 0,
+          grandTotal: Number(b.total_amount),
+          paymentMethod: 'Cash' as 'Cash' | 'Card' | 'Transfer',
+          status: (b.status === 'PAID' ? 'Paid' : 'Unpaid') as 'Paid' | 'Unpaid',
+          createdAt: b.issued_at || '',
+        })))
+      )
+      .subscribe(bills => {
+        this.billList = bills;
+        this.saveData();
+      });
+  }
+
   addBill(bill: Bill) {
-    this.billList.push(bill);
-    this.saveData();
+    const payload = {
+      appointment_id: null,
+      discount: bill.discount || 0,
+      patient_name: bill.patient || null,
+      items: bill.items.map(i => ({
+        description: i.description,
+        qty: i.qty,
+        price: i.price,
+      })),
+    };
+
+    this.http.post<any>(`${this.API_URL}/billing`, payload).subscribe({
+      next: () => {
+        this.syncBillingsFromAPI();
+      },
+      error: (err) => {
+        console.error('Cannot create billing on API', err);
+        this.billList.push(bill);
+        this.saveData();
+      }
+    });
   }
   updateBill(bill: Bill) {
-    const index = this.billList.findIndex((b) => b.id === bill.id);
-    if (index !== -1) {
-      this.billList[index] = bill;
-      this.saveData();
-    }
+    const statusMap: { [key: string]: string } = { 'Paid': 'PAID', 'Unpaid': 'UNPAID' };
+    const apiStatus = statusMap[bill.status] || bill.status;
+
+    this.http.put<any>(`${this.API_URL}/billing/${bill.id}`, {
+      status: apiStatus,
+      total_amount: bill.grandTotal,
+    }).subscribe({
+      next: () => {
+        this.syncBillingsFromAPI();
+      },
+      error: (err) => {
+        console.error('Cannot update billing on API', err);
+        const index = this.billList.findIndex((b) => b.id === bill.id);
+        if (index !== -1) {
+          this.billList[index] = bill;
+          this.saveData();
+        }
+      }
+    });
   }
   deleteBill(id: number) {
-    this.billList = this.billList.filter((b) => b.id !== id);
-    this.saveData();
+    this.http.delete(`${this.API_URL}/billing/${id}`).subscribe({
+      next: () => {
+        this.syncBillingsFromAPI();
+      },
+      error: (err) => {
+        console.error('Cannot delete billing from API', err);
+        this.billList = this.billList.filter((b) => b.id !== id);
+        this.saveData();
+      }
+    });
   }
 }
