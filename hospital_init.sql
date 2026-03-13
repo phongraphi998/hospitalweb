@@ -532,7 +532,6 @@ ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_
 --
 
 COPY public.appointments (id, patient_id, doctor_id, department_id, start_time, reason, status, created_at) FROM stdin;
-1	1	1	1	2026-03-06 01:51:06.952624	Chest pain consultation	PENDING	2026-03-05 01:51:06.952624
 \.
 
 
@@ -543,7 +542,6 @@ COPY public.appointments (id, patient_id, doctor_id, department_id, start_time, 
 --
 
 COPY public.billing (id, appointment_id, total_amount, status, issued_at, paid_at) FROM stdin;
-1	1	1500.00	UNPAID	2026-03-05 01:51:06.952624	\N
 \.
 
 
@@ -566,7 +564,6 @@ COPY public.departments (id, code, name, head, phone, floor, room, status, descr
 --
 
 COPY public.medical_records (id, appointment_id, diagnosis, treatment, notes, created_at) FROM stdin;
-1	1	Mild heart inflammation	Prescribed medication and rest	Follow-up in 2 weeks	2026-03-05 01:51:06.952624
 \.
 
 
@@ -577,7 +574,6 @@ COPY public.medical_records (id, appointment_id, diagnosis, treatment, notes, cr
 --
 
 COPY public.patients (id, first_name, last_name, gender, birth_date, phone, address, created_at) FROM stdin;
-1	Anan	Wongchai	Male	1995-05-10	0901112222	Bangkok, Thailand	2026-03-05 01:51:06.952624
 2	Kanya	Srisuk	Female	2000-08-20	0903334444	Chiang Mai, Thailand	2026-03-05 01:51:06.952624
 \.
 
@@ -589,8 +585,6 @@ COPY public.patients (id, first_name, last_name, gender, birth_date, phone, addr
 --
 
 COPY public.prescription_items (id, prescription_id, medicine_name, dosage, frequency, duration_days, created_at) FROM stdin;
-1	1	Aspirin	100mg	Once daily	14	2026-03-05 01:51:06.952624
-2	1	Beta Blocker	50mg	Twice daily	14	2026-03-05 01:51:06.952624
 \.
 
 
@@ -601,7 +595,6 @@ COPY public.prescription_items (id, prescription_id, medicine_name, dosage, freq
 --
 
 COPY public.prescriptions (id, appointment_id, created_at) FROM stdin;
-1	1	2026-03-05 01:51:06.952624
 \.
 
 
