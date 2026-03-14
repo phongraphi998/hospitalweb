@@ -501,6 +501,26 @@
             }
           </select>
         </div>
+        
+        <!-- Appointment selection (only show if patient selected) -->
+        @if (newRecord.patient) {
+          <div class="dd-form-group">
+            <label>Appointment *</label>
+            @if (getAvailableAppointmentsForPatient(newRecord.patient).length > 0) {
+              <select [(ngModel)]="selectedAppointmentForRecordId" name="recAppointment">
+                <option value="">— Select appointment —</option>
+                @for (apt of getAvailableAppointmentsForPatient(newRecord.patient); track apt.id) {
+                  <option [value]="apt.id">{{ apt.time }} - {{ apt.type }} (Room {{ apt.room }})</option>
+                }
+              </select>
+            } @else {
+              <div style="color: #f56565; font-size: 0.875rem; margin-top: 0.5rem;">
+                ⚠️ No available appointments for this patient
+              </div>
+            }
+          </div>
+        }
+
         <div class="dd-form-group">
           <label>Diagnosis *</label>
           <input
@@ -529,7 +549,7 @@
           class="dd-btn-submit rec"
           (click)="submitRecord()"
           [disabled]="
-            !newRecord.patient || !newRecord.diagnosis || !newRecord.notes
+            !newRecord.patient || !newRecord.diagnosis || !newRecord.notes || !selectedAppointmentForRecordId
           "
         >
           <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
