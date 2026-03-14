@@ -175,8 +175,9 @@ export class AuthService {
       errorMessage = `Error: ${error.error.message}`;
     } else {
       // Server-side error
+      const backendError = error.error?.error || error.error?.message;
       errorMessage =
-        error.error?.message ||
+        backendError ||
         `Error Code: ${error.status}\nMessage: ${error.message}`;
     }
 
